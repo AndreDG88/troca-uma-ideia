@@ -25,6 +25,7 @@ services:
       - ./backend/.env
     environment:
       - DJANGO_SETTINGS_MODULE=trocaumaideia.settings
+    command: ["./wait-for-it.sh", "db", "5432", "--", "poetry", "run", "python", "manage.py", "runserver", "0.0.0.0:8000"]
 
 volumes:
   postgres_data:
