@@ -1,0 +1,64 @@
+name: Django Backend CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+# Sobe um banco de dados PostgreSQL para rodar os testes
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_DB: trocaumaideia
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+# Usa variáveis de ambiente seguras para testes
+    env:
+      SECRET_KEY: fake-key
+      DEBUG: 1
+      DB_NAME: trocaumaideia
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_HOST: localhost
+      DB_PORT: 5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+# Instala todas as dependências do projeto
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Install dependencies
+        run: poetry install
+
+# Verifica se o código segue o padrão de formatação do Black
+      - name: Run Black
+        run: poetry run black . --check
+
+# Verifica se os imports estão organizados com isort
+      - name: Run isort
+        run: poetry run isort . --check-only
+
+# Roda os testes automatizados do Django
+      - name: Run tests
+        run: poetry run python manage.py test

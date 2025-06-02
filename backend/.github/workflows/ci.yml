@@ -1,0 +1,33 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout do repositório
+        uses: actions/checkout@v3
+
+      - name: 🐍 Instalar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 📦 Instalar Poetry
+        uses: abatilo/actions-poetry@v3
+        with:
+          poetry-version: 1.8.2
+
+      - name: 📁 Instalar dependências com Poetry
+        run: poetry install
+
+      - name: ✅ Rodar isort (verificar ordenação de imports)
+        run: poetry run isort . --check-only
+
+      - name: ✅ Rodar black (verificar formatação)
+        run: poetry run black . --check
+
+      - name: 🧪 Rodar testes com pytest
+        run: poetry run pytest

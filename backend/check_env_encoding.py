@@ -7,4 +7,3 @@ with open(".env", "rb") as f:
     except UnicodeDecodeError as e:
         print("Erro de encoding no arquivo .env:")
         print(e)
-
