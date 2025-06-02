@@ -21,7 +21,9 @@ def test_authenticated_user_can_see_own_tweets():
     tweet = Tweet.objects.create(user=user, content="Meu tweet de teste")
 
     client = APIClient()
-    response = client.post("/api/token/", {"username": "andre", "password": "senha123"}, format="json")
+    response = client.post(
+        "/api/token/", {"username": "andre", "password": "senha123"}, format="json"
+    )
     token = response.data["access"]
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
 
@@ -36,8 +38,10 @@ def test_authenticated_user_can_see_own_tweets():
 def test_authenticated_user_can_create_tweet():
     user = User.objects.create_user(username="joao", password="senha123")
     client = APIClient()
-    
-    response = client.post("/api/token/", {"username": "joao", "password": "senha123"}, format="json")
+
+    response = client.post(
+        "/api/token/", {"username": "joao", "password": "senha123"}, format="json"
+    )
     token = response.data["access"]
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
 
@@ -68,7 +72,9 @@ def test_user_can_update_own_tweet():
     tweet = Tweet.objects.create(user=user, content="Original")
 
     client = APIClient()
-    response = client.post("/api/token/", {"username": "andre", "password": "senha123"}, format="json")
+    response = client.post(
+        "/api/token/", {"username": "andre", "password": "senha123"}, format="json"
+    )
     token = response.data["access"]
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
 
@@ -87,7 +93,9 @@ def test_user_cannot_update_other_user_tweet():
     tweet = Tweet.objects.create(user=user2, content="Tweet do João")
 
     client = APIClient()
-    response = client.post("/api/token/", {"username": "andre", "password": "senha123"}, format="json")
+    response = client.post(
+        "/api/token/", {"username": "andre", "password": "senha123"}, format="json"
+    )
     token = response.data["access"]
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
 
@@ -104,7 +112,9 @@ def test_user_can_delete_own_tweet():
     tweet = Tweet.objects.create(user=user, content="Deletável")
 
     client = APIClient()
-    response = client.post("/api/token/", {"username": "andre", "password": "senha123"}, format="json")
+    response = client.post(
+        "/api/token/", {"username": "andre", "password": "senha123"}, format="json"
+    )
     token = response.data["access"]
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
 
@@ -120,7 +130,9 @@ def test_user_cannot_delete_other_user_tweet():
     tweet = Tweet.objects.create(user=user2, content="Tweet do João")
 
     client = APIClient()
-    response = client.post("/api/token/", {"username": "andre", "password": "senha123"}, format="json")
+    response = client.post(
+        "/api/token/", {"username": "andre", "password": "senha123"}, format="json"
+    )
     token = response.data["access"]
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
 
