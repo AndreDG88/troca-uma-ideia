@@ -58,5 +58,5 @@ jobs:
         working-directory: backend
 
       - name: Run tests
-        run: poetry run python manage.py test
+        run: poetry run pytest
         working-directory: backend
