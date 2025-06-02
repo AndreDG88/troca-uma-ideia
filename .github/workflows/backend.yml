@@ -35,29 +35,28 @@ jobs:
       DB_PORT: 5432
 
     steps:
-      - name: Checkout do repositório
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Instalar Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Instalar Poetry
+      - name: Install Poetry
         run: pip install poetry
 
-      - name: Instalar dependências com Poetry
-        working-directory: backend
+      - name: Install dependencies
         run: poetry install
-
-      - name: Verificar formatação com Black
         working-directory: backend
+
+      - name: Run Black
         run: poetry run black . --check
-
-      - name: Verificar ordenação com isort
         working-directory: backend
+
+      - name: Run isort
         run: poetry run isort . --check-only
-
-      - name: Rodar testes
         working-directory: backend
+
+      - name: Run tests
         run: poetry run python manage.py test
+        working-directory: backend
