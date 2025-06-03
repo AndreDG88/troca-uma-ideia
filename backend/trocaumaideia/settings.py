@@ -78,7 +78,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "trocaumaideia.wsgi.application"
 
 
-# Database
+# Database.
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
