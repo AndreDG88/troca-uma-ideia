@@ -1,8 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from .models import Tweet
-from .models import Profile
+from .models import Profile, Tweet
 
 
 class TweetSerializer(serializers.ModelSerializer):
@@ -11,6 +10,7 @@ class TweetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tweet
         fields = ["id", "user", "content", "created_at"]
+
 
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
@@ -23,6 +23,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+
 class UserSerializer(serializers.ModelSerializer):
     tweets = TweetSerializer(many=True, read_only=True)
     profile = ProfileSerializer(read_only=True)
@@ -30,6 +31,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "username", "profile", "tweets"]
+
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     avatar = serializers.ImageField(write_only=True, required=False)

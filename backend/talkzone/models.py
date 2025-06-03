@@ -17,10 +17,13 @@ class Tweet(models.Model):
     def __str__(self):
         return f"{self.user.username}: {self.content[:50]}"
 
+
 # Cria um modelo Profile vinculado a um User
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
-    avatar = models.ImageField(upload_to="avatars/", null=True, blank=True) # O avatar é salvo na pasta media/avatars/
+    avatar = models.ImageField(
+        upload_to="avatars/", null=True, blank=True
+    )  # O avatar é salvo na pasta media/avatars/
     bio = models.TextField(blank=True, default="")
 
     def __str__(self):

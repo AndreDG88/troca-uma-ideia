@@ -1,8 +1,10 @@
 import pytest
-from rest_framework.test import APIClient
 from django.contrib.auth.models import User
-from talkzone.models import Profile
+from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
+
+from talkzone.models import Profile
+
 
 # Cria um usuário e retorna instância + token de acesso.
 @pytest.fixture
@@ -15,6 +17,7 @@ def create_user_and_token(db):
     access_token = str(refresh.access_token)
     return user, access_token
 
+
 # Testa se um usuário autenticado consegue obter seu perfil com sucesso.
 @pytest.mark.django_db
 def test_get_my_profile_authorized(create_user_and_token):
@@ -26,6 +29,7 @@ def test_get_my_profile_authorized(create_user_and_token):
     assert response.status_code == 200
     assert response.data["bio"] == "Bio original"
     assert "avatar" in response.data
+
 
 # Testa se um usuário autenticado consegue atualizar sua bio com PUT.
 @pytest.mark.django_db
@@ -41,6 +45,7 @@ def test_update_my_profile_bio(create_user_and_token):
     response = client.put("/api/myprofile/", data)
     assert response.status_code == 200
     assert response.data["bio"] == "Nova bio via teste!"
+
 
 # Testa se acesso sem token retorna 401.
 @pytest.mark.django_db

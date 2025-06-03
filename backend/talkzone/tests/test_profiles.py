@@ -1,11 +1,14 @@
+from io import BytesIO
+
 import pytest
 from django.contrib.auth.models import User
-from talkzone.models import Profile
-from rest_framework.test import APIClient
-from rest_framework import status
-from io import BytesIO
-from PIL import Image
 from django.core.files.uploadedfile import SimpleUploadedFile
+from PIL import Image
+from rest_framework import status
+from rest_framework.test import APIClient
+
+from talkzone.models import Profile
+
 
 @pytest.mark.django_db
 def test_profile_is_created_with_user():
@@ -20,15 +23,15 @@ def test_avatar_upload_and_retrieval(create_user_and_token):
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
 
     # Simula um arquivo PNG válido pequeno (1x1 pixel)
-    image = Image.new('RGB', (1, 1), color='white')
+    image = Image.new("RGB", (1, 1), color="white")
     buffer = BytesIO()
-    image.save(buffer, format='PNG')
+    image.save(buffer, format="PNG")
     buffer.seek(0)
 
     avatar = SimpleUploadedFile("avatar.png", buffer.read(), content_type="image/png")
 
     data = {"avatar": avatar, "bio": ""}
-    response = client.patch("/api/myprofile/", data, format='multipart')
+    response = client.patch("/api/myprofile/", data, format="multipart")
     print(response.status_code)
     print(response.data)
     assert response.status_code == 200

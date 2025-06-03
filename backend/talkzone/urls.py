@@ -1,8 +1,13 @@
 from django.urls import path
 
 from .views import (
-    MyTweetsView, TweetDetailView, TweetListCreateView,
-    UserListCreateView, UserDetailView, ProfileView, MyProfileView
+    MyProfileView,
+    MyTweetsView,
+    ProfileView,
+    TweetDetailView,
+    TweetListCreateView,
+    UserDetailView,
+    UserListCreateView,
 )
 
 urlpatterns = [

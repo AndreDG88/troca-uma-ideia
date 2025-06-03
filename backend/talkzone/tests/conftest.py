@@ -1,8 +1,10 @@
 import pytest
-from rest_framework.test import APIClient
 from django.contrib.auth.models import User
-from talkzone.models import Profile
+from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
+
+from talkzone.models import Profile
+
 
 @pytest.fixture
 def create_user_and_token(db):
