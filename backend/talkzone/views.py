@@ -1,14 +1,24 @@
 from django.contrib.auth.models import User
 from django.shortcuts import render
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, status
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from .models import Tweet
+from .models import Profile, Tweet
 from .permissions import IsOwnerOrReadOnly
-from .serializers import TweetSerializer, UserSerializer
+from .serializers import (
+    ProfileSerializer,
+    TweetSerializer,
+    UserRegistrationSerializer,
+    UserSerializer,
+)
 
 # Create your views here.
 
 
+# View para listar e criar tweets
 class TweetListCreateView(generics.ListCreateAPIView):
     queryset = Tweet.objects.all().order_by("-created_at")
     serializer_class = TweetSerializer
@@ -18,23 +28,67 @@ class TweetListCreateView(generics.ListCreateAPIView):
         serializer.save(user=self.request.user)
 
 
+# View para visualizar, atualizar ou deletar um tweet específico
 class TweetDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Tweet.objects.all()
     serializer_class = TweetSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
 
-class UserListView(generics.ListAPIView):
+# View para listar todos os usuários
+class UserListCreateView(generics.ListCreateAPIView):
+    queryset = User.objects.all()
+    permission_classes = [permissions.AllowAny]
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return UserRegistrationSerializer
+        return UserSerializer
+
+
+# permite acesso a um usuário específico
+class UserDetailView(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
 
-# personaliza o retorno para mostrar apenas os tweets do usuário autenticado, ordenados do mais recente para o mais antigo.
-
-
+# View para listar apenas os tweets do usuário autenticado,
+# ordenados do mais recente para o mais antigo
 class MyTweetsView(generics.ListAPIView):
     serializer_class = TweetSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         return Tweet.objects.filter(user=self.request.user).order_by("-created_at")
+
+
+# View para registro de novo usuário
+class RegisterView(APIView):
+    def post(self, request):
+        serializer = UserRegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "Usuário criado com sucesso!"},
+                status=status.HTTP_201_CREATED,
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# View para obter dados básicos do usuário autenticado
+class ProfileView(generics.RetrieveUpdateAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
+
+
+# View para visualizar ou atualizar o próprio perfil (bio e avatar)
+class MyProfileView(generics.RetrieveUpdateAPIView):
+    serializer_class = ProfileSerializer
+    permission_classes = [IsAuthenticated]
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
+
+    def get_object(self):
+        return self.request.user.profile
