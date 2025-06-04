@@ -29,7 +29,20 @@ from deploy.views import github_webhook
 
 
 def home_view(request):
-    return JsonResponse({"mensagem": "API online."})
+    rotas = {
+        "admin": "/admin/",
+        "api_talkzone_tweets": "/api/tweets/",
+        "api_talkzone_users": "/api/users/",
+        "api_token_obtain": "/api/token/",
+        "api_token_refresh": "/api/token/refresh/",
+        "github_webhook": "/hooks/github/",
+    }
+    return JsonResponse(
+        {
+            "mensagem": "API online.",
+            "rotas_disponiveis": rotas,
+        }
+    )
 
 
 urlpatterns = [

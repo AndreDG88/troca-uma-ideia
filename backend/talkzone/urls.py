@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from django.urls import path
 
 from .views import (
@@ -10,7 +11,27 @@ from .views import (
     UserListCreateView,
 )
 
+
+def talkzone_home(request):
+    rotas = {
+        "tweets_list_create": "/api/tweets/",
+        "tweets_detail": "/api/tweets/<int:pk>/",
+        "users_list_create": "/api/users/",
+        "users_detail": "/api/users/<int:pk>/",
+        "my_tweets": "/api/mytweets/",
+        "profile": "/api/profile/",
+        "my_profile": "/api/myprofile/",
+    }
+    return JsonResponse(
+        {
+            "mensagem": "Rotas da app talkzone",
+            "rotas_disponiveis": rotas,
+        }
+    )
+
+
 urlpatterns = [
+    path("", talkzone_home, name="talkzone-home"),
     path("tweets/", TweetListCreateView.as_view(), name="tweet-list-create"),
     path("users/", UserListCreateView.as_view(), name="user-list-create"),
     path("tweets/<int:pk>/", TweetDetailView.as_view(), name="tweet-detail"),
