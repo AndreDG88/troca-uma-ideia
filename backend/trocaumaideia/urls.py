@@ -18,6 +18,7 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.http import JsonResponse
 from django.urls import include, path
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -26,7 +27,13 @@ from rest_framework_simplejwt.views import (
 
 from deploy.views import github_webhook
 
+
+def home_view(request):
+    return JsonResponse({"mensagem": "API online."})
+
+
 urlpatterns = [
+    path("", home_view),
     path("admin/", admin.site.urls),
     path("api/", include("talkzone.urls")),
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
