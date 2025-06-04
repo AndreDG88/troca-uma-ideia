@@ -17,4 +17,7 @@ python manage.py migrate
 # Coleta os arquivos estáticos
 python manage.py collectstatic --noinput
 
+# Força reload do WSGI
+touch /var/www/andredg88_pythonanywhere_com_wsgi.py
+
 echo "Deploy finalizado com sucesso!"
