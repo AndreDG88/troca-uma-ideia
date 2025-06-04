@@ -14,9 +14,8 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
-from decouple import (  # Para carregar variáveis do .env e não expor senhas no código
-    config,
-)
+from decouple import config, Csv
+
 from rest_framework.settings import api_settings
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -32,7 +31,7 @@ SECRET_KEY = config("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+ALLOWED_HOSTS = config("ALLOWED_HOSTS", cast=Csv(), default="127.0.0.1,localhost").split(",")
 
 
 # Application definition
