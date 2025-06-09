@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 
 const Login = () => {
   const { login } = useAuth(); // Pega a função login do contexto
@@ -13,8 +13,9 @@ const Login = () => {
     try {
       await login(username, password); // Tenta logar com os dados
     } catch (err) {
-      setError("Usuário ou senha inválidos."); // Exibe erro
-    }
+  console.error(err); // exibe o erro no console do navegador
+  setError("Usuário ou senha inválidos.");
+}
   };
 
   return (

@@ -1,20 +1,22 @@
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
+import type { UserProfile } from "../types/UserProfile";
 
 // Tipagem do contexto (token, usuário e funções de login/logout)
 interface AuthContextType {
-  user: any;
+  user: UserProfile | null;
   token: string | null;
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
+  setUser: React.Dispatch<React.SetStateAction<UserProfile | null>>;
 }
 
 // Criação do contexto de autenticação
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
   // Pega token do localStorage (se já estiver salvo)
   const [token, setToken] = useState<string | null>(() => {
     return localStorage.getItem("token");
@@ -36,7 +38,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (token) {
       api
-        .get("/api/myprofile/", {
+        .get("/api/profile/", {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((res) => {
@@ -62,7 +64,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
     // Busca o perfil autenticado
-    const profile = await api.get("/api/myprofile/");
+    const profile = await api.get("/api/profile/");
     setUser(profile.data);
     // Redireciona para a página inicial
     navigate("/");
@@ -70,7 +72,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Disponibiliza os dados e funções para os componentes filhos
   return (
-    <AuthContext.Provider value={{ user, token, login, logout }}>
+    <AuthContext.Provider value={{ user, token, login, logout, setUser }}>
       {children}
     </AuthContext.Provider>
   );

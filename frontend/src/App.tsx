@@ -1,9 +1,9 @@
 import { Routes, Route } from "react-router-dom";
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Profile from "./pages/Profile";
-import MyTweets from "./pages/MyTweets";
+import Home from "./pages/Home/Home";
+import Login from "./pages/Login/Login";
+import Register from "./pages/Register/Register";
+import Profile from "./pages/Profile/Profile";
+import MyTweets from "./pages/MyTweets/MyTweets";
 import PrivateRoute from "./components/PrivateRoute";
 
 const App = () => {
