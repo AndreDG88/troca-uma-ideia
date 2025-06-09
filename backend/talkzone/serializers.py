@@ -13,6 +13,8 @@ class TweetSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
+    avatar = serializers.ImageField(required=False)
+
     class Meta:
         model = Profile
         fields = ["avatar", "bio"]
@@ -35,7 +37,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     tweets = TweetSerializer(many=True, read_only=True)
-    profile = ProfileSerializer(read_only=True)
+    profile = ProfileSerializer(source='profile', read_only=True)
 
     class Meta:
         model = User
