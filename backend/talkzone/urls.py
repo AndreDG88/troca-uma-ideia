@@ -9,6 +9,7 @@ from .views import (
     TweetListCreateView,
     UserDetailView,
     UserListCreateView,
+    RegisterView,
 )
 
 
@@ -18,6 +19,7 @@ def talkzone_home(request):
         "tweets_detail": "/api/tweets/<int:pk>/",
         "users_list_create": "/api/users/",
         "users_detail": "/api/users/<int:pk>/",
+        "register": "/api/register/",
         "my_tweets": "/api/mytweets/",
         "profile": "/api/profile/",
         "my_profile": "/api/myprofile/",
@@ -36,6 +38,7 @@ urlpatterns = [
     path("users/", UserListCreateView.as_view(), name="user-list-create"),
     path("tweets/<int:pk>/", TweetDetailView.as_view(), name="tweet-detail"),
     path("users/<int:pk>/", UserDetailView.as_view(), name="user-detail"),
+    path("register/", RegisterView.as_view(), name="user-register"),
     path("mytweets/", MyTweetsView.as_view(), name="my-tweets"),
     path("profile/", ProfileView.as_view(), name="profile"),
     path("myprofile/", MyProfileView.as_view(), name="my-profile"),
