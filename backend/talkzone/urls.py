@@ -5,11 +5,11 @@ from .views import (
     MyProfileView,
     MyTweetsView,
     ProfileView,
+    RegisterView,
     TweetDetailView,
     TweetListCreateView,
     UserDetailView,
     UserListCreateView,
-    RegisterView,
 )
 
 
