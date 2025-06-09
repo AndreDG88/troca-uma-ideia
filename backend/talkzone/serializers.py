@@ -40,16 +40,16 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "username", "profile", "tweets"]
-        extra_kwargs = {
-            "username": {"required": False}
-        }
+        extra_kwargs = {"username": {"required": False}}
 
     def update(self, instance, validated_data):
         username = validated_data.get("username")
         if username:
             # Garante que o novo username não está em uso
             if User.objects.exclude(pk=instance.pk).filter(username=username).exists():
-                raise serializers.ValidationError({"username": "Este nome de usuário já está em uso."})
+                raise serializers.ValidationError(
+                    {"username": "Este nome de usuário já está em uso."}
+                )
             instance.username = username
 
         instance.save()
