@@ -18,8 +18,17 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ["avatar", "bio"]
 
     def update(self, instance, validated_data):
+        # Deleta avatar antigo se for trocado
+        new_avatar = validated_data.get("avatar", None)
+        if new_avatar and instance.avatar and instance.avatar != new_avatar:
+            instance.avatar.delete(save=False)
+
         instance.bio = validated_data.get("bio", instance.bio)
-        instance.avatar = validated_data.get("avatar", instance.avatar)
+
+        # Só atualiza o avatar se tiver um novo
+        if new_avatar:
+            instance.avatar = new_avatar
+
         instance.save()
         return instance
 
@@ -31,6 +40,20 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "username", "profile", "tweets"]
+        extra_kwargs = {
+            "username": {"required": False}
+        }
+
+    def update(self, instance, validated_data):
+        username = validated_data.get("username")
+        if username:
+            # Garante que o novo username não está em uso
+            if User.objects.exclude(pk=instance.pk).filter(username=username).exists():
+                raise serializers.ValidationError({"username": "Este nome de usuário já está em uso."})
+            instance.username = username
+
+        instance.save()
+        return instance
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
