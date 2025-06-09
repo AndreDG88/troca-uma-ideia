@@ -1,15 +1,33 @@
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import api from "../../api/axios";
 
 const Home = () => {
-  const { user, logout, setUser } = useAuth(); // vou explicar como adicionar setUser no contexto!
+  const { user, logout, setUser } = useAuth();
   const navigate = useNavigate();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Armazena tweets do usuário
+  const [userTweets, setUserTweets] = useState<
+    Array<{ id: number; content: string; created_at: string }>
+  >([]);
+
+  useEffect(() => {
+    const fetchUserTweets = async () => {
+      try {
+        const response = await api.get("/api/mytweets/");
+        setUserTweets(response.data);
+      } catch (error) {
+        console.error("Erro ao buscar tweets do usuário:", error);
+      }
+    };
+
+    fetchUserTweets();
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -29,13 +47,13 @@ const Home = () => {
     formData.append("avatar", event.target.files[0]);
 
     try {
-      const response = await api.patch("/api/profile/", formData, {
+      const response = await api.patch("/api/myprofile/", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
       console.log("Resposta do upload:", response.data);
 
-      const profileResponse = await api.get("/api/profile/");
+      const profileResponse = await api.get("/api/myprofile/");
       setUser(profileResponse.data);
 
     } catch (err: unknown) {
@@ -104,6 +122,25 @@ const Home = () => {
         <button className="btn btn-outline-danger" onClick={handleLogout}>
           Sair
         </button>
+      </div>
+
+      <div className="mt-5 text-start">
+        <h3>Quer conferir suas últimas ideias?</h3>
+
+        {userTweets.length > 0 ? (
+          <ul className="list-group mt-3">
+            {userTweets.map((tweet) => (
+              <li key={tweet.id} className="list-group-item">
+                <p>{tweet.content}</p>
+                <small className="text-muted">
+                  {new Date(tweet.created_at).toLocaleString()}
+                </small>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-3">Você ainda não postou nenhuma ideia.</p>
+        )}
       </div>
     </div>
   );
