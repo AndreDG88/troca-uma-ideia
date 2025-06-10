@@ -6,14 +6,14 @@ from .models import Profile, Tweet
 
 class TweetSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField(read_only=True)
-    like_count = serializers.SerializerMethodField()
+    likes = serializers.SerializerMethodField()
     liked_by_user = serializers.SerializerMethodField()
 
     class Meta:
         model = Tweet
         fields = ["id", "user", "content", "created_at", "likes", "liked_by_user"]
 
-    def get_like_count(self, obj):
+    def get_likes(self, obj):
         return obj.likes.count()
 
     def get_liked_by_user(self, obj):
