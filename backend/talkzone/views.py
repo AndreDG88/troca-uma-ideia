@@ -35,6 +35,37 @@ class TweetDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
 
+# Views para adicionar e remover likes de tweets.
+class LikeTweetView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        try:
+            tweet = Tweet.objects.get(pk=pk)
+        except Tweet.DoesNotExist:
+            return Response(
+                {"detail": "Tweet não encontrado."}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        tweet.likes.add(request.user)
+        return Response({"detail": "Tweet curtido."}, status=status.HTTP_200_OK)
+
+
+class UnlikeTweetView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        try:
+            tweet = Tweet.objects.get(pk=pk)
+        except Tweet.DoesNotExist:
+            return Response(
+                {"detail": "Tweet não encontrado."}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        tweet.likes.remove(request.user)
+        return Response({"detail": "Curtida removida."}, status=status.HTTP_200_OK)
+
+
 # View para listar todos os usuários
 class UserListCreateView(generics.ListCreateAPIView):
     queryset = User.objects.all()
