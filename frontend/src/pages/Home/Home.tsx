@@ -2,6 +2,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import api from "../../api/axios";
+import SendPapo from "../SendPapo/SendPapo";
 
 const Home = () => {
   const { user, logout, setUser } = useAuth();
@@ -10,24 +11,37 @@ const Home = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
-  // Armazena tweets do usuário
-  const [userTweets, setUserTweets] = useState<
+
+  // Estado para armazenar os papos do usuário
+  const [userPapos, setUserPapos] = useState<
     Array<{ id: number; content: string; created_at: string }>
   >([]);
 
+  // Estado para controlar se está exibindo o feed ou o formulário mandar papo
+  const [view, setView] = useState<"feed" | "sendPapo">("feed");
+
   useEffect(() => {
-    const fetchUserTweets = async () => {
+    const fetchUserPapos = async () => {
       try {
-        const response = await api.get("/api/mytweets/");
-        setUserTweets(response.data);
+        const response = await api.get("/api/mytweets/"); // Pode renomear endpoint depois se quiser
+        setUserPapos(response.data);
       } catch (error) {
-        console.error("Erro ao buscar tweets do usuário:", error);
+        console.error("Erro ao buscar papos do usuário:", error);
       }
     };
 
-    fetchUserTweets();
+    fetchUserPapos();
   }, []);
+
+  // Função para atualizar lista de papos após enviar um novo
+  const refreshPapos = async () => {
+    try {
+      const response = await api.get("/api/mytweets/");
+      setUserPapos(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar papos do usuário:", error);
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -109,37 +123,65 @@ const Home = () => {
 
       {error && <p style={{ color: "red" }}>{error}</p>}
 
+      {/* Botões para alternar entre views */}
       <div className="d-grid gap-3 mt-4">
-        <button className="btn btn-primary" onClick={() => navigate("/timeline")}>
-          Ver Timeline
-        </button>
-        <button className="btn btn-success" onClick={() => navigate("/novo-tweet")}>
-          Criar Novo Tweet
-        </button>
-        <button className="btn btn-secondary" onClick={() => navigate("/perfil")}>
-          Meu Perfil
-        </button>
+        {view === "feed" && (
+          <>
+            <button
+              className="btn btn-success"
+              onClick={() => setView("sendPapo")}
+            >
+              Mandar um papo
+            </button>
+            <button className="btn btn-primary" onClick={() => navigate("/timeline")}>
+              Ver Timeline
+            </button>
+            <button className="btn btn-secondary" onClick={() => navigate("/perfil")}>
+              Meu Perfil
+            </button>
+          </>
+        )}
+
+        {view === "sendPapo" && (
+          <button className="btn btn-outline-secondary" onClick={() => setView("feed")}>
+            Voltar para meus papos
+          </button>
+        )}
+
         <button className="btn btn-outline-danger" onClick={handleLogout}>
           Sair
         </button>
       </div>
 
       <div className="mt-5 text-start">
-        <h3>Quer conferir suas últimas ideias?</h3>
+        {view === "feed" && (
+          <>
+            <h3>Quer conferir suas últimas trocações de ideia?</h3>
 
-        {userTweets.length > 0 ? (
-          <ul className="list-group mt-3">
-            {userTweets.map((tweet) => (
-              <li key={tweet.id} className="list-group-item">
-                <p>{tweet.content}</p>
-                <small className="text-muted">
-                  {new Date(tweet.created_at).toLocaleString()}
-                </small>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="mt-3">Você ainda não postou nenhuma ideia.</p>
+            {userPapos.length > 0 ? (
+              <ul className="list-group mt-3">
+                {userPapos.map((papo) => (
+                  <li key={papo.id} className="list-group-item">
+                    <p>{papo.content}</p>
+                    <small className="text-muted">
+                      {new Date(papo.created_at).toLocaleString()}
+                    </small>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-3">Você ainda não mandou nenhum papo!.</p>
+            )}
+          </>
+        )}
+
+        {view === "sendPapo" && (
+          <SendPapo
+            onPapoSent={() => {
+              refreshPapos();
+              setView("feed");
+            }}
+          />
         )}
       </div>
     </div>
@@ -147,4 +189,3 @@ const Home = () => {
 };
 
 export default Home;
-

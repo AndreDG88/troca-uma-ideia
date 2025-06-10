@@ -4,6 +4,7 @@ import api from "../../api/axios";
 
 const Register = () => {
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -30,6 +31,7 @@ const Register = () => {
     try {
       const formData = new FormData();
       formData.append("username", username);
+      formData.append("email", email);
       formData.append("password", password);
       if (avatarFile) {
         formData.append("avatar", avatarFile);
@@ -71,6 +73,19 @@ const Register = () => {
             onChange={(e) => setUsername(e.target.value)}
             required
             minLength={3}
+          />
+        </div>
+
+        {/* Email */}
+        <div className="mb-3">
+          <label htmlFor="email" className="form-label">Email</label>
+          <input
+            type="email"
+            id="email"
+            className="form-control"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
           />
         </div>
 
