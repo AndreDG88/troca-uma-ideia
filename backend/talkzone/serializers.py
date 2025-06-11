@@ -12,7 +12,12 @@ class UserMiniSerializer(serializers.ModelSerializer):
     profile = serializers.SerializerMethodField()
 
     def get_profile(self, obj):
-        return {"avatar": obj.profile.avatar.url if obj.profile.avatar else None}
+        request = self.context.get("request")
+        if obj.profile.avatar:
+            avatar_url = request.build_absolute_uri(obj.profile.avatar.url)
+        else:
+            avatar_url = None
+        return {"avatar": avatar_url}
 
 
 class TweetSerializer(serializers.ModelSerializer):

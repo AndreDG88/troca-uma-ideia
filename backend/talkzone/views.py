@@ -54,6 +54,9 @@ class TimelineView(ListAPIView):
 
         return Tweet.objects.all().order_by("-created_at")
 
+    def get_serializer_context(self):
+        return {"request": self.request}
+
 
 # Views para adicionar e remover likes de tweets.
 class LikeTweetView(APIView):
