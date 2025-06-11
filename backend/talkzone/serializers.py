@@ -23,15 +23,12 @@ class UserMiniSerializer(serializers.ModelSerializer):
 
 class TweetSerializer(serializers.ModelSerializer):
     user = UserMiniSerializer(read_only=True)
-    likes = serializers.SerializerMethodField()
+    likes_count = serializers.SerializerMethodField()
     liked_by_user = serializers.SerializerMethodField()
 
     class Meta:
         model = Tweet
-        fields = ["id", "user", "content", "created_at", "likes", "liked_by_user"]
-
-    def get_likes(self, obj):
-        return obj.likes.count()
+        fields = ["id", "user", "content", "created_at", "likes_count", "liked_by_user"]
 
     def get_liked_by_user(self, obj):
         request = self.context.get("request")

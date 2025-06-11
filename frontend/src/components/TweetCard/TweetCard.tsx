@@ -1,75 +1,81 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import api from "../../api/axios";
 import type { Tweet } from "../../types/UserProfile";
-import { useNavigate } from "react-router-dom";
 
-interface Props {
+interface TweetCardProps {
   tweet: Tweet;
   onLiked?: () => void;
 }
 
-export default function TweetCard({ tweet, onLiked }: Props) {
-  const navigate = useNavigate();
-  const [likes, setLikes] = useState(tweet.likes);
-  const [likedByUser, setLikedByUser] = useState(tweet.liked_by_user);
+const TweetCard = ({ tweet, onLiked }: TweetCardProps) => {
+  const [liked, setLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(tweet.likes_count || 0);
 
-  const handleLike = async () => {
+  useEffect(() => {
+    if ("liked" in tweet) {
+      setLiked(Boolean(tweet.liked));
+    }
+  }, [tweet]);
+
+  // Função para toggle like
+  const handleLikeToggle = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
-      navigate("/login");
+      alert("Você precisa estar logado para curtir.");
       return;
     }
 
     try {
-      const response = await fetch(`https://AndreDG88.pythonanywhere.com/api/tweets/${tweet.id}/like/`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        setLikes((prev) => (likedByUser ? prev - 1 : prev + 1));
-        setLikedByUser((prev) => !prev);
-        if (onLiked) onLiked();
+      let response;
+      if (liked) {
+        // Se já curtiu, descurte
+        response = await api.delete(`/api/tweets/${tweet.id}/like/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
       } else {
-        console.error("Erro ao curtir/descurtir o tweet");
+        // Se não curtiu, curta
+        response = await api.post(`/api/tweets/${tweet.id}/like/`, null, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
       }
+
+      const data = response.data;
+      setLiked(data.liked);
+      setLikesCount(data.likes_count);
+
+      if (onLiked) onLiked();
     } catch (error) {
-      console.error("Erro de rede ao curtir/descurtir:", error);
+      console.error("Erro ao curtir/descurtir papo:", error);
     }
   };
 
+  // Montar URL completa do avatar
+  const avatarUrl = tweet.user?.profile?.avatar
+    ? `https://AndreDG88.pythonanywhere.com${tweet.user.profile.avatar}`
+    : "/default-avatar.png";
+
   return (
-    <li
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "10px",
-        marginBottom: "16px",
-        borderBottom: "1px solid #ccc",
-        paddingBottom: "12px",
-      }}
-    >
-      {tweet.user.profile.avatar && (
+    <li className="tweet-card border rounded p-3 mb-3">
+      <div className="d-flex align-items-center mb-2">
         <img
-          src={tweet.user.profile.avatar}
-          alt={`Avatar de ${tweet.user.username}`}
-          style={{ width: "40px", height: "40px", borderRadius: "50%" }}
+          src={avatarUrl}
+          alt={`${tweet.user?.username}'s avatar`}
+          style={{ width: 40, height: 40, borderRadius: "50%", marginRight: 10 }}
         />
-      )}
-      <div>
-        <p><strong>@{tweet.user.username}</strong></p>
-        <p>{tweet.content}</p>
-        <p style={{ fontSize: "0.85em", color: "#555" }}>
-          {new Date(tweet.created_at).toLocaleString()}
-        </p>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <span>{likes} ❤️</span>
-          <button onClick={handleLike}>
-            {likedByUser ? "Descurtir" : "Curtir"}
-          </button>
-        </div>
+        <strong>{tweet.user?.username || "Usuário"}</strong>
       </div>
+      <p>{tweet.content}</p>
+
+      <button
+        type="button"
+        className={`btn btn-sm ${liked ? "btn-danger" : "btn-outline-danger"}`}
+        onClick={handleLikeToggle}
+      >
+        {liked ? "❤️ Curtido" : "♡ Curtir"} ({likesCount})
+      </button>
     </li>
   );
-}
+};
+
+export default TweetCard;
+

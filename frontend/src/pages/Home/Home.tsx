@@ -4,8 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Tweet } from "../../types/UserProfile";
 import api from "../../api/axios";
 import SendPapo from "../SendPapo/SendPapo";
-
-// ... (mantém os imports existentes)
+import TweetCard from "../../components/TweetCard/TweetCard";
 
 const Home = () => {
   const { user, logout, setUser } = useAuth();
@@ -45,19 +44,6 @@ const Home = () => {
     fetchUserPapos();
     if (view === "timeline") {
       fetchTimelinePapos();
-    }
-  };
-
-  const toggleLike = async (papoId: number, liked: boolean) => {
-    try {
-      if (liked) {
-        await api.delete(`/api/tweets/${papoId}/like/`);
-      } else {
-        await api.post(`/api/tweets/${papoId}/like/`);
-      }
-      refreshPapos();
-    } catch (error) {
-      console.error("Erro ao curtir/descurtir:", error);
     }
   };
 
@@ -177,25 +163,11 @@ const Home = () => {
             {userPapos.length > 0 ? (
               <ul className="list-group mt-3">
                 {userPapos.map((papo) => (
-                  <li
+                  <TweetCard
                     key={papo.id}
-                    className="list-group-item d-flex justify-content-between align-items-center"
-                  >
-                    <div>
-                      <p>{papo.content}</p>
-                      <small className="text-muted">
-                        {new Date(papo.created_at).toLocaleString()}
-                      </small>
-                    </div>
-                    <button
-                      className={`btn btn-sm ${
-                        papo.liked_by_user ? "btn-danger" : "btn-outline-danger"
-                      }`}
-                      onClick={() => toggleLike(papo.id, papo.liked_by_user)}
-                    >
-                      {papo.liked_by_user ? "💔 Descurtir" : "❤️ Curtir"} {papo.likes}
-                    </button>
-                  </li>
+                    tweet={papo}
+                    onLiked={fetchUserPapos}
+                  />
                 ))}
               </ul>
             ) : (
@@ -210,26 +182,11 @@ const Home = () => {
             {timelinePapos.length > 0 ? (
               <ul className="list-group mt-3">
                 {timelinePapos.map((papo) => (
-                  <li
+                  <TweetCard
                     key={papo.id}
-                    className="list-group-item d-flex justify-content-between align-items-center"
-                  >
-                    <div>
-                      <strong>{papo.user?.username || "@"}</strong>
-                      <p>{papo.content}</p>
-                      <small className="text-muted">
-                        {new Date(papo.created_at).toLocaleString()}
-                      </small>
-                    </div>
-                    <button
-                      className={`btn btn-sm ${
-                        papo.liked_by_user ? "btn-danger" : "btn-outline-danger"
-                      }`}
-                      onClick={() => toggleLike(papo.id, papo.liked_by_user)}
-                    >
-                      {papo.liked_by_user ? "💔" : "❤️"} {papo.likes}
-                    </button>
-                  </li>
+                    tweet={papo}
+                    onLiked={fetchTimelinePapos}
+                  />
                 ))}
               </ul>
             ) : (
