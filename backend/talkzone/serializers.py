@@ -13,10 +13,11 @@ class UserMiniSerializer(serializers.ModelSerializer):
 
     def get_profile(self, obj):
         request = self.context.get("request")
-        if obj.profile.avatar:
+        avatar_url = None
+
+        if obj.profile.avatar and request:
             avatar_url = request.build_absolute_uri(obj.profile.avatar.url)
-        else:
-            avatar_url = None
+
         return {"avatar": avatar_url}
 
 

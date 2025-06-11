@@ -28,12 +28,18 @@ class TweetListCreateView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
+    def get_serializer_context(self):
+        return {"request": self.request}
+
 
 # View para visualizar, atualizar ou deletar um tweet específico
 class TweetDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Tweet.objects.all()
     serializer_class = TweetSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+
+    def get_serializer_context(self):
+        return {"request": self.request}
 
 
 # View para lista de tweets do feed
@@ -59,7 +65,7 @@ class TimelineView(ListAPIView):
 
 
 # Views para adicionar e remover likes de tweets.
-class LikeTweetView(APIView):
+class ToggleLikeTweetView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, pk):
@@ -70,23 +76,13 @@ class LikeTweetView(APIView):
                 {"detail": "Tweet não encontrado."}, status=status.HTTP_404_NOT_FOUND
             )
 
-        tweet.likes.add(request.user)
-        return Response({"detail": "Tweet curtido."}, status=status.HTTP_200_OK)
-
-
-class UnlikeTweetView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def post(self, request, pk):
-        try:
-            tweet = Tweet.objects.get(pk=pk)
-        except Tweet.DoesNotExist:
-            return Response(
-                {"detail": "Tweet não encontrado."}, status=status.HTTP_404_NOT_FOUND
-            )
-
-        tweet.likes.remove(request.user)
-        return Response({"detail": "Curtida removida."}, status=status.HTTP_200_OK)
+        user = request.user
+        if user in tweet.likes.all():
+            tweet.likes.remove(user)
+            return Response({"detail": "Curtida removida."}, status=status.HTTP_200_OK)
+        else:
+            tweet.likes.add(user)
+            return Response({"detail": "Tweet curtido."}, status=status.HTTP_200_OK)
 
 
 # View para listar todos os usuários
@@ -114,6 +110,9 @@ class MyTweetsView(generics.ListAPIView):
 
     def get_queryset(self):
         return Tweet.objects.filter(user=self.request.user).order_by("-created_at")
+
+    def get_serializer_context(self):
+        return {"request": self.request}
 
 
 # View para registro de novo usuário

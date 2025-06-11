@@ -7,6 +7,7 @@ from .models import Tweet
 
 @admin.register(Tweet)
 class TweetAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "content", "created_at")
-    search_fields = ("content", "user__username")
-    list_filter = ("created_at",)
+    list_display = ("id", "user", "content", "created_at", "likes_count")
+
+    def likes_count(self, obj):
+        return obj.likes.count()

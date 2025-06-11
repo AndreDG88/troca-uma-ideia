@@ -2,15 +2,14 @@ from django.http import JsonResponse
 from django.urls import path
 
 from .views import (
-    LikeTweetView,
     MyProfileView,
     MyTweetsView,
     ProfileView,
     RegisterView,
     TimelineView,
+    ToggleLikeTweetView,
     TweetDetailView,
     TweetListCreateView,
-    UnlikeTweetView,
     UserDetailView,
     UserListCreateView,
 )
@@ -45,7 +44,8 @@ urlpatterns = [
     path("mytweets/", MyTweetsView.as_view(), name="my-tweets"),
     path("profile/", ProfileView.as_view(), name="profile"),
     path("myprofile/", MyProfileView.as_view(), name="my-profile"),
-    path("tweets/<int:pk>/like/", LikeTweetView.as_view(), name="like-tweet"),
-    path("tweets/<int:pk>/unlike/", UnlikeTweetView.as_view(), name="unlike-tweet"),
     path("timeline/", TimelineView.as_view(), name="timeline"),
+    path(
+        "tweets/<int:pk>/like/", ToggleLikeTweetView.as_view(), name="tweet-toggle-like"
+    ),
 ]

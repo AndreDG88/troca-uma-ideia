@@ -14,9 +14,20 @@ class Tweet(models.Model):
         auto_now_add=True
     )  # salva a data automaticamente quando o tweet é criado
     likes = models.ManyToManyField(User, related_name="liked_tweets", blank=True)
+    original_tweet = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="retweets",
+    )
+    is_retweet = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.user.username}: {self.content[:50]}"
+
+    def like_count(self):
+        return self.likes.count()
 
 
 # Cria um modelo Profile vinculado a um User
@@ -26,9 +37,9 @@ class Profile(models.Model):
         upload_to="avatars/", null=True, blank=True
     )  # O avatar é salvo na pasta media/avatars/
     bio = models.TextField(blank=True, default="")
+    followers = models.ManyToManyField(
+        "self", symmetrical=False, related_name="following", blank=True
+    )
 
     def __str__(self):
         return f"Perfil de {self.user.username}"
-
-    def like_count(self):
-        return self.likes.count()
