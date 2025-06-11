@@ -5,6 +5,7 @@ from .views import (
     LikeTweetView,
     MyProfileView,
     MyTweetsView,
+    TimelineView,
     ProfileView,
     RegisterView,
     TweetDetailView,
@@ -46,4 +47,5 @@ urlpatterns = [
     path("myprofile/", MyProfileView.as_view(), name="my-profile"),
     path("tweets/<int:pk>/like/", LikeTweetView.as_view(), name="like-tweet"),
     path("tweets/<int:pk>/unlike/", UnlikeTweetView.as_view(), name="unlike-tweet"),
+    path('timeline/', TimelineView.as_view(), name='timeline')
 ]

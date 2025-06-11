@@ -1,9 +1,14 @@
 // Interface de tipagem para o user.
 export interface Tweet {
   id: number;
-  user: string;
   content: string;
   created_at: string;
+  likes: number;
+  liked_by_user: boolean;
+  user: {
+    id: number;
+    username: string;
+  };
 }
 
 export interface Profile {

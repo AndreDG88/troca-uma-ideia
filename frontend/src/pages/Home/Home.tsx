@@ -1,8 +1,11 @@
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
+import type { Tweet } from "../../types/UserProfile";
 import api from "../../api/axios";
 import SendPapo from "../SendPapo/SendPapo";
+
+// ... (mantém os imports existentes)
 
 const Home = () => {
   const { user, logout, setUser } = useAuth();
@@ -12,34 +15,49 @@ const Home = () => {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Estado para armazenar os papos do usuário
-  const [userPapos, setUserPapos] = useState<
-    Array<{ id: number; content: string; created_at: string }>
-  >([]);
-
-  // Estado para controlar se está exibindo o feed ou o formulário mandar papo
-  const [view, setView] = useState<"feed" | "sendPapo">("feed");
+  const [userPapos, setUserPapos] = useState<Tweet[]>([]);
+  const [timelinePapos, setTimelinePapos] = useState<Tweet[]>([]);
+  const [view, setView] = useState<"feed" | "sendPapo" | "timeline">("feed");
 
   useEffect(() => {
-    const fetchUserPapos = async () => {
-      try {
-        const response = await api.get("/api/mytweets/"); // Pode renomear endpoint depois se quiser
-        setUserPapos(response.data);
-      } catch (error) {
-        console.error("Erro ao buscar papos do usuário:", error);
-      }
-    };
-
     fetchUserPapos();
   }, []);
 
-  // Função para atualizar lista de papos após enviar um novo
-  const refreshPapos = async () => {
+  const fetchUserPapos = async () => {
     try {
       const response = await api.get("/api/mytweets/");
-      setUserPapos(response.data);
+      setUserPapos(response.data.slice(0, 10)); // só os 10 mais recentes
     } catch (error) {
       console.error("Erro ao buscar papos do usuário:", error);
+    }
+  };
+
+  const fetchTimelinePapos = async () => {
+    try {
+      const response = await api.get("/api/timeline/");
+      setTimelinePapos(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar timeline:", error);
+    }
+  };
+
+  const refreshPapos = () => {
+    fetchUserPapos();
+    if (view === "timeline") {
+      fetchTimelinePapos();
+    }
+  };
+
+  const toggleLike = async (papoId: number, liked: boolean) => {
+    try {
+      if (liked) {
+        await api.delete(`/api/tweets/${papoId}/like/`);
+      } else {
+        await api.post(`/api/tweets/${papoId}/like/`);
+      }
+      refreshPapos();
+    } catch (error) {
+      console.error("Erro ao curtir/descurtir:", error);
     }
   };
 
@@ -61,20 +79,17 @@ const Home = () => {
     formData.append("avatar", event.target.files[0]);
 
     try {
-      const response = await api.patch("/api/myprofile/", formData, {
+      await api.patch("/api/myprofile/", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      console.log("Resposta do upload:", response.data);
-
       const profileResponse = await api.get("/api/myprofile/");
       setUser(profileResponse.data);
-
     } catch (err: unknown) {
-        if (err instanceof Error) {
-          setError(`Erro ao fazer upload do avatar: ${err.message}`);
-        } else {
-          setError("Erro ao fazer upload do avatar.");
+      if (err instanceof Error) {
+        setError(`Erro ao fazer upload do avatar: ${err.message}`);
+      } else {
+        setError("Erro ao fazer upload do avatar.");
       }
     } finally {
       setUploading(false);
@@ -123,18 +138,20 @@ const Home = () => {
 
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      {/* Botões para alternar entre views */}
       <div className="d-grid gap-3 mt-4">
         {view === "feed" && (
           <>
-            <button
-              className="btn btn-success"
-              onClick={() => setView("sendPapo")}
-            >
+            <button className="btn btn-success" onClick={() => setView("sendPapo")}>
               Mandar um papo
             </button>
-            <button className="btn btn-primary" onClick={() => navigate("/timeline")}>
-              Ver Timeline
+            <button
+              className="btn btn-primary"
+              onClick={() => {
+                setView("timeline");
+                fetchTimelinePapos();
+              }}
+            >
+              Trocas de ideias
             </button>
             <button className="btn btn-secondary" onClick={() => navigate("/perfil")}>
               Meu Perfil
@@ -142,7 +159,7 @@ const Home = () => {
           </>
         )}
 
-        {view === "sendPapo" && (
+        {(view === "sendPapo" || view === "timeline") && (
           <button className="btn btn-outline-secondary" onClick={() => setView("feed")}>
             Voltar para meus papos
           </button>
@@ -156,21 +173,67 @@ const Home = () => {
       <div className="mt-5 text-start">
         {view === "feed" && (
           <>
-            <h3>Quer conferir suas últimas trocações de ideia?</h3>
-
+            <h3>Seus últimos 10 papos:</h3>
             {userPapos.length > 0 ? (
               <ul className="list-group mt-3">
                 {userPapos.map((papo) => (
-                  <li key={papo.id} className="list-group-item">
-                    <p>{papo.content}</p>
-                    <small className="text-muted">
-                      {new Date(papo.created_at).toLocaleString()}
-                    </small>
+                  <li
+                    key={papo.id}
+                    className="list-group-item d-flex justify-content-between align-items-center"
+                  >
+                    <div>
+                      <p>{papo.content}</p>
+                      <small className="text-muted">
+                        {new Date(papo.created_at).toLocaleString()}
+                      </small>
+                    </div>
+                    <button
+                      className={`btn btn-sm ${
+                        papo.liked_by_user ? "btn-danger" : "btn-outline-danger"
+                      }`}
+                      onClick={() => toggleLike(papo.id, papo.liked_by_user)}
+                    >
+                      {papo.liked_by_user ? "💔 Descurtir" : "❤️ Curtir"} {papo.likes}
+                    </button>
                   </li>
                 ))}
               </ul>
             ) : (
               <p className="mt-3">Você ainda não mandou nenhum papo!.</p>
+            )}
+          </>
+        )}
+
+        {view === "timeline" && (
+          <>
+            <h3>Sua Timeline</h3>
+            {timelinePapos.length > 0 ? (
+              <ul className="list-group mt-3">
+                {timelinePapos.map((papo) => (
+                  <li
+                    key={papo.id}
+                    className="list-group-item d-flex justify-content-between align-items-center"
+                  >
+                    <div>
+                      <strong>{papo.user?.username || "@"}</strong>
+                      <p>{papo.content}</p>
+                      <small className="text-muted">
+                        {new Date(papo.created_at).toLocaleString()}
+                      </small>
+                    </div>
+                    <button
+                      className={`btn btn-sm ${
+                        papo.liked_by_user ? "btn-danger" : "btn-outline-danger"
+                      }`}
+                      onClick={() => toggleLike(papo.id, papo.liked_by_user)}
+                    >
+                      {papo.liked_by_user ? "💔" : "❤️"} {papo.likes}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-3">Sua timeline está vazia.</p>
             )}
           </>
         )}
