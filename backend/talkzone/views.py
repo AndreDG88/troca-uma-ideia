@@ -35,6 +35,7 @@ class TweetDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = TweetSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
+
 # View para lista de tweets do feed
 class TimelineView(ListAPIView):
     serializer_class = TweetSerializer
@@ -42,14 +43,17 @@ class TimelineView(ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        only_following = self.request.query_params.get('only_following')
+        only_following = self.request.query_params.get("only_following")
 
-        if only_following == 'true':
+        if only_following == "true":
             profile = Profile.objects.get(user=user)
-            following_ids = profile.follows.values_list('user__id', flat=True)
-            return Tweet.objects.filter(author__id__in=list(following_ids) + [user.id]).order_by('-created_at')
-        
-        return Tweet.objects.all().order_by('-created_at')
+            following_ids = profile.follows.values_list("user__id", flat=True)
+            return Tweet.objects.filter(
+                author__id__in=list(following_ids) + [user.id]
+            ).order_by("-created_at")
+
+        return Tweet.objects.all().order_by("-created_at")
+
 
 # Views para adicionar e remover likes de tweets.
 class LikeTweetView(APIView):
