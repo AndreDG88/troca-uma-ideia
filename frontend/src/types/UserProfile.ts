@@ -8,6 +8,9 @@ export interface Tweet {
   user: {
     id: number;
     username: string;
+    profile: {
+      avatar: string | null;
+    };
   };
 }
 

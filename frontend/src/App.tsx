@@ -4,6 +4,7 @@ import Login from "./pages/Login/Login";
 import Register from "./pages/Register/Register";
 import Profile from "./pages/Profile/Profile";
 import MyTweets from "./pages/MyTweets/MyTweets";
+import Timeline from "./pages/Timeline/Timeline";
 import PrivateRoute from "./components/PrivateRoute";
 import Layout from "./components/Layout/Layout";
 
@@ -35,6 +36,14 @@ const App = () => {
           element={
             <PrivateRoute>
               <Profile />
+            </PrivateRoute>
+          }
+        />
+      <Route
+          path="/timeline"
+          element={
+            <PrivateRoute>
+              <Timeline />
             </PrivateRoute>
           }
         />

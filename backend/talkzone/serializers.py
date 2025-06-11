@@ -5,13 +5,23 @@ from .models import Profile, Tweet
 
 
 class TweetSerializer(serializers.ModelSerializer):
-    user = serializers.StringRelatedField(read_only=True)
+    user = serializers.SerializerMethodField()
     likes = serializers.SerializerMethodField()
     liked_by_user = serializers.SerializerMethodField()
 
     class Meta:
         model = Tweet
         fields = ["id", "user", "content", "created_at", "likes", "liked_by_user"]
+
+    def get_user(self, obj):
+        profile = getattr(obj.user, "profile", None)
+        return {
+            "id": obj.user.id,
+            "username": obj.user.username,
+            "profile": {
+                "avatar": profile.avatar.url if profile and profile.avatar else None
+            },
+        }
 
     def get_likes(self, obj):
         return obj.likes.count()
