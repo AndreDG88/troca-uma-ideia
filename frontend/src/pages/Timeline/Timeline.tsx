@@ -41,20 +41,20 @@ export default function Timeline() {
       <h2>Timeline</h2>
       <ul>
         {tweets.map((tweet) => (
-          <li key={tweet.id} style={{ borderBottom: "1px solid #ccc", padding: "10px 0" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              {tweet.user.profile?.avatar && (
-                <img
-                  src={tweet.user.profile.avatar}
-                  alt="Avatar"
-                  style={{ width: "32px", height: "32px", borderRadius: "50%" }}
-                />
-              )}
-              <strong>@{tweet.user.username}</strong>
+          <li key={tweet.id} style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
+            {tweet.user.profile.avatar && (
+              <img
+                src={tweet.user.profile.avatar}
+                alt="Avatar"
+                style={{ width: "40px", height: "40px", borderRadius: "50%" }}
+              />
+            )}
+            <div>
+              <p><strong>@{tweet.user.username}</strong></p>
+              <p>{tweet.content}</p>
+              <p>{new Date(tweet.created_at).toLocaleString()}</p>
+              <p>{tweet.likes} ❤️</p>
             </div>
-            <p>{tweet.content}</p>
-            <p>{new Date(tweet.created_at).toLocaleString()}</p>
-            <p>{tweet.likes} ❤️</p>
           </li>
         ))}
       </ul>

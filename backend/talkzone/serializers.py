@@ -4,24 +4,25 @@ from rest_framework import serializers
 from .models import Profile, Tweet
 
 
+class UserMiniSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "profile"]
+
+    profile = serializers.SerializerMethodField()
+
+    def get_profile(self, obj):
+        return {"avatar": obj.profile.avatar.url if obj.profile.avatar else None}
+
+
 class TweetSerializer(serializers.ModelSerializer):
-    user = serializers.SerializerMethodField()
+    user = UserMiniSerializer(read_only=True)
     likes = serializers.SerializerMethodField()
     liked_by_user = serializers.SerializerMethodField()
 
     class Meta:
         model = Tweet
         fields = ["id", "user", "content", "created_at", "likes", "liked_by_user"]
-
-    def get_user(self, obj):
-        profile = getattr(obj.user, "profile", None)
-        return {
-            "id": obj.user.id,
-            "username": obj.user.username,
-            "profile": {
-                "avatar": profile.avatar.url if profile and profile.avatar else None
-            },
-        }
 
     def get_likes(self, obj):
         return obj.likes.count()
