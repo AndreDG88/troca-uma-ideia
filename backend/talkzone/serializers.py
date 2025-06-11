@@ -30,6 +30,9 @@ class TweetSerializer(serializers.ModelSerializer):
         model = Tweet
         fields = ["id", "user", "content", "created_at", "likes_count", "liked_by_user"]
 
+    def get_likes_count(self, obj):
+        return obj.likes.count()
+
     def get_liked_by_user(self, obj):
         request = self.context.get("request")
         if request and request.user.is_authenticated:
