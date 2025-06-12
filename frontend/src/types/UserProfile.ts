@@ -18,6 +18,9 @@ export interface Tweet {
 export interface Profile {
   avatar: string | null;
   bio: string;
+  name?: string;
+  followers_count?: number;
+  following_count?: number;
 }
 
 export interface UserProfile {

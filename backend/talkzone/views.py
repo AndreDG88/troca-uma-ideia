@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.shortcuts import render
 from rest_framework import generics, permissions, status
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -49,13 +49,13 @@ class TimelineView(ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        only_following = self.request.query_params.get("only_following")
+        only_following = self.request.query_params.get("only_following") == "true"
 
-        if only_following == "true":
+        if only_following:
             profile = Profile.objects.get(user=user)
-            following_ids = profile.follows.values_list("user__id", flat=True)
+            following_ids = profile.follows.values_list("id", flat=True)
             return Tweet.objects.filter(
-                author__id__in=list(following_ids) + [user.id]
+                user__profile__in=profile.followers.all()
             ).order_by("-created_at")
 
         return Tweet.objects.all().order_by("-created_at")
@@ -137,6 +137,12 @@ class ProfileView(generics.RetrieveUpdateAPIView):
         return self.request.user
 
 
+class ProfileDetailView(RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    lookup_field = "username"
+
+
 # View para visualizar ou atualizar o próprio perfil (bio e avatar)
 class MyProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = ProfileSerializer
@@ -145,3 +151,76 @@ class MyProfileView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user.profile
+
+
+#  Seguir e deixar de seguir
+class ToggleFollowView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, username):
+        try:
+            target_user = User.objects.get(username=username)
+            target_profile = target_user.profile
+            my_profile = request.user.profile
+        except User.DoesNotExist:
+            return Response(
+                {"detail": "Usuário não encontrado."}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        if target_profile == my_profile:
+            return Response(
+                {"detail": "Você não pode seguir a si mesmo."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if my_profile in target_profile.followers.all():
+            target_profile.followers.remove(my_profile)
+            return Response(
+                {"detail": f"Você deixou de seguir {username}."},
+                status=status.HTTP_200_OK,
+            )
+        else:
+            target_profile.followers.add(my_profile)
+            return Response(
+                {"detail": f"Você agora está seguindo {username}."},
+                status=status.HTTP_200_OK,
+            )
+
+
+# Vizualização de seguidores
+class FollowersFollowingView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, username):
+        try:
+            user = User.objects.get(username=username)
+            profile = user.profile
+        except User.DoesNotExist:
+            return Response({"detail": "Usuário não encontrado."}, status=404)
+
+        followers = [
+            {
+                "id": follower.user.id,
+                "username": follower.user.username,
+                "avatar": (
+                    request.build_absolute_uri(follower.avatar.url)
+                    if follower.avatar
+                    else None
+                ),
+            }
+            for follower in profile.followers.all()
+        ]
+        following = [
+            {
+                "id": followed.user.id,
+                "username": followed.user.username,
+                "avatar": (
+                    request.build_absolute_uri(followed.avatar.url)
+                    if followed.avatar
+                    else None
+                ),
+            }
+            for followed in profile.following.all()
+        ]
+
+        return Response({"followers": followers, "following": following})

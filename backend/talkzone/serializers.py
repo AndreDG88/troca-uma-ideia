@@ -5,20 +5,35 @@ from .models import Profile, Tweet
 
 
 class UserMiniSerializer(serializers.ModelSerializer):
+    profile = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         fields = ["id", "username", "profile"]
 
-    profile = serializers.SerializerMethodField()
-
     def get_profile(self, obj):
         request = self.context.get("request")
         avatar_url = None
+        is_following = False
 
         if obj.profile.avatar and request:
             avatar_url = request.build_absolute_uri(obj.profile.avatar.url)
 
-        return {"avatar": avatar_url}
+        if request and request.user.is_authenticated:
+            is_following = request.user.profile in obj.profile.followers.all()
+
+        return {
+            "avatar": avatar_url,
+            "is_following": is_following,
+        }
+
+
+class OriginalTweetSerializer(serializers.ModelSerializer):
+    user = UserMiniSerializer(read_only=True)
+
+    class Meta:
+        model = Tweet
+        fields = ["id", "user", "content", "created_at"]
 
 
 class TweetSerializer(serializers.ModelSerializer):
@@ -26,9 +41,32 @@ class TweetSerializer(serializers.ModelSerializer):
     likes_count = serializers.SerializerMethodField()
     liked_by_user = serializers.SerializerMethodField()
 
+    original_tweet = OriginalTweetSerializer(read_only=True)
+    original_tweet_id = serializers.PrimaryKeyRelatedField(
+        queryset=Tweet.objects.all(), write_only=True, required=False
+    )
+
+    reply_to_id = serializers.PrimaryKeyRelatedField(
+        queryset=Tweet.objects.all(), write_only=True, required=False, allow_null=True
+    )
+
+    replies = serializers.SerializerMethodField()
+
     class Meta:
         model = Tweet
-        fields = ["id", "user", "content", "created_at", "likes_count", "liked_by_user"]
+        fields = [
+            "id",
+            "user",
+            "content",
+            "created_at",
+            "likes_count",
+            "liked_by_user",
+            "is_repapo",
+            "original_tweet",
+            "original_tweet_id",
+            "reply_to_id",
+            "replies",
+        ]
 
     def get_likes_count(self, obj):
         return obj.likes.count()
@@ -39,13 +77,39 @@ class TweetSerializer(serializers.ModelSerializer):
             return request.user in obj.likes.all()
         return False
 
+    def get_replies(self, obj):
+        replies = obj.replies.all().order_by("created_at")
+        return TweetSerializer(replies, many=True, context=self.context).data
+
+    def create(self, validated_data):
+        original_tweet = validated_data.pop("original_tweet_id", None)
+        reply_to = validated_data.pop("reply_to_id", None)
+        is_repapo = validated_data.get("is_repapo", False)
+
+        tweet = Tweet.objects.create(
+            user=self.context["request"].user,
+            original_tweet=original_tweet,
+            reply_to=reply_to,
+            is_repapo=is_repapo,
+            **validated_data,
+        )
+        return tweet
+
 
 class ProfileSerializer(serializers.ModelSerializer):
     avatar = serializers.ImageField(required=False)
+    followers_count = serializers.SerializerMethodField()
+    following_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Profile
-        fields = ["avatar", "bio"]
+        fields = ["avatar", "bio", "followers_count", "following_count"]
+
+    def get_followers_count(self, obj):
+        return obj.followers.count()
+
+    def get_following_count(self, obj):
+        return obj.following.count()
 
     def update(self, instance, validated_data):
         # Deleta avatar antigo se for trocado

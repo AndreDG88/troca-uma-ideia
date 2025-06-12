@@ -139,7 +139,7 @@ const Home = () => {
             >
               Trocas de ideias
             </button>
-            <button className="btn btn-secondary" onClick={() => navigate("/perfil")}>
+            <button className="btn btn-secondary" onClick={() => navigate("/profile")}>
               Meu Perfil
             </button>
           </>
