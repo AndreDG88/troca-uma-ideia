@@ -3,6 +3,9 @@ export interface Tweet {
   id: number;
   content: string;
   created_at: string;
+  likes_count: number;
+  liked?: boolean;
+  liked_by_user: boolean;
   user: {
     id: number;
     username: string;
@@ -10,8 +13,6 @@ export interface Tweet {
       avatar: string | null;
     };
   };
-  likes_count: number;
-  liked_by_user: boolean;
 }
 
 export interface Profile {

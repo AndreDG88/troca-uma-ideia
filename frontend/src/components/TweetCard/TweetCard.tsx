@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../../api/axios";
 import type { Tweet } from "../../types/UserProfile";
+import { useAuth } from "../../context/AuthContext";
 
 interface TweetCardProps {
   tweet: Tweet;
@@ -8,54 +9,60 @@ interface TweetCardProps {
 }
 
 const TweetCard = ({ tweet, onLiked }: TweetCardProps) => {
-  const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(tweet.likes_count || 0);
+  const [loading, setLoading] = useState(false);
+  const { token } = useAuth(); // Usa o token diretamente do AuthContext
 
   useEffect(() => {
-    if ("liked" in tweet) {
-      setLiked(Boolean(tweet.liked));
-    }
+    setLikesCount(tweet.likes_count || 0);
   }, [tweet]);
 
-  // Função para toggle like
+  // Alterna entre curtir e descurtir o tweet
   const handleLikeToggle = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      alert("Você precisa estar logado para curtir.");
-      return;
-    }
+    if (!token || loading) return;
+    // console.log("Token atual:", token); // Para depuração
 
+    setLoading(true);
     try {
-      let response;
-      if (liked) {
-        // Se já curtiu, descurte
-        response = await api.delete(`/api/tweets/${tweet.id}/like/`, {
+      const response = tweet.liked
+        // Descurtir
+        ? await api.delete(`/api/tweets/${tweet.id}/like/`, {
           headers: { Authorization: `Bearer ${token}` },
-        });
-      } else {
-        // Se não curtiu, curta
-        response = await api.post(`/api/tweets/${tweet.id}/like/`, null, {
+          })
+        // Curtir
+        : await api.post(`/api/tweets/${tweet.id}/like/`, null, {
           headers: { Authorization: `Bearer ${token}` },
-        });
-      }
+          });
 
+      // Garante que os dados estão atualizados corretamente
       const data = response.data;
-      setLiked(data.liked);
-      setLikesCount(data.likes_count);
+
+      if (typeof data.likes_count !== "undefined") {
+        setLikesCount(data.likes_count);
+      } else {
+        setLikesCount((prev) => 
+          tweet.liked ? prev - 1 : prev + 1
+        );
+      }
 
       if (onLiked) onLiked();
     } catch (error) {
       console.error("Erro ao curtir/descurtir papo:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   // Montar URL completa do avatar
   const avatarUrl = tweet.user?.profile?.avatar
-    ? `https://AndreDG88.pythonanywhere.com${tweet.user.profile.avatar}`
+    ? tweet.user.profile.avatar.startsWith("http")
+      ? tweet.user.profile.avatar
+      : `https://AndreDG88.pythonanywhere.com${tweet.user.profile.avatar}`
     : "/default-avatar.png";
 
   return (
     <li className="tweet-card border rounded p-3 mb-3">
+      {/* Header com avatar e nome do usuário */}
       <div className="d-flex align-items-center mb-2">
         <img
           src={avatarUrl}
@@ -64,14 +71,20 @@ const TweetCard = ({ tweet, onLiked }: TweetCardProps) => {
         />
         <strong>{tweet.user?.username || "Usuário"}</strong>
       </div>
+
+      {/* Conteúdo do tweet */}
       <p>{tweet.content}</p>
 
+      {/* Botão de curtir/descurtir */}
       <button
         type="button"
-        className={`btn btn-sm ${liked ? "btn-danger" : "btn-outline-danger"}`}
         onClick={handleLikeToggle}
+        disabled={loading}
+        className="btn btn-sm btn-outline-danger d-flex align-items-center gap-1"
       >
-        {liked ? "❤️ Curtido" : "♡ Curtir"} ({likesCount})
+        <span style={{ fontSize: "1.2rem", color: "#dc3545" }}>❤️</span>
+        <span>Curtir</span>
+        <span> {likesCount}</span>
       </button>
     </li>
   );

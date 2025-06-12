@@ -8,4 +8,20 @@ const api = axios.create({
   },
 });
 
+// Interceptor que roda antes de cada requisição
+// Aqui ele busca o token no localStorage e adiciona no header Authorization
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token && token !== "undefined" && token !== "null") {
+      config.headers = config.headers || {};
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 export default api;
