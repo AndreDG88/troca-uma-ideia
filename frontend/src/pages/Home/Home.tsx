@@ -19,12 +19,8 @@ const Home = () => {
   const [timelinePapos, setTimelinePapos] = useState<Tweet[]>([]);
   const [view, setView] = useState<"feed" | "sendPapo" | "timeline">("feed");
 
-  const apenasPaposNormais = (tweets: Tweet[]) => {
-  console.log("Antes do filtro:", tweets);
-  const filtrados = tweets.filter((t) => !t.reply_to_id && !t.is_repapo);
-  console.log("Depois do filtro:", filtrados);
-  return filtrados;
-};
+  const apenasPaposNormais = (tweets: Tweet[]) =>
+    tweets.filter((t) => !t.reply_to_id && !t.is_repapo);
 
   const fetchUserPapos = useCallback(async () => {
     try {

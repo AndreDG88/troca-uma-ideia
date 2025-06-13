@@ -46,9 +46,17 @@ class TweetSerializer(serializers.ModelSerializer):
         queryset=Tweet.objects.all(), write_only=True, required=False
     )
 
-    reply_to_id = serializers.SerializerMethodField()
+    reply_to = serializers.SerializerMethodField()
+
+    reply_to_id = serializers.PrimaryKeyRelatedField(
+        queryset=Tweet.objects.all(),
+        write_only=True,
+        required=False,
+    )
 
     replies = serializers.SerializerMethodField()
+
+    repapear_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Tweet
@@ -62,8 +70,10 @@ class TweetSerializer(serializers.ModelSerializer):
             "is_repapo",
             "original_tweet",
             "original_tweet_id",
+            "reply_to",
             "reply_to_id",
             "replies",
+            "repapear_count",
         ]
 
     def get_likes_count(self, obj):
@@ -79,13 +89,19 @@ class TweetSerializer(serializers.ModelSerializer):
         replies = obj.replies.all().order_by("created_at")
         return TweetSerializer(replies, many=True, context=self.context).data
 
+    def get_reply_to(self, obj):
+        return obj.reply_to.id if obj.reply_to else None
+
     def get_reply_to_id(self, obj):
         return obj.reply_to.id if obj.reply_to else None
+
+    def get_repapear_count(self, obj):
+        return obj.retweets.count()
 
     def create(self, validated_data):
         original_tweet = validated_data.pop("original_tweet_id", None)
         reply_to = validated_data.pop("reply_to_id", None)
-        is_repapo = validated_data.get("is_repapo", False)
+        is_repapo = validated_data.pop("is_repapo", False)
 
         validated_data.pop("user", None)
 
