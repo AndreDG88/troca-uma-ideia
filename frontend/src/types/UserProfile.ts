@@ -4,8 +4,13 @@ export interface Tweet {
   content: string;
   created_at: string;
   likes_count: number;
-  liked?: boolean;
   liked_by_user: boolean;
+  liked?: boolean;
+  is_repapo?: boolean;
+  reply_to_id?: number | null;
+  original_tweet?: number | null;
+  replies?: Tweet[];
+  repapear_count?: number;
   user: {
     id: number;
     username: string;

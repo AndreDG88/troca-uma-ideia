@@ -46,9 +46,7 @@ class TweetSerializer(serializers.ModelSerializer):
         queryset=Tweet.objects.all(), write_only=True, required=False
     )
 
-    reply_to_id = serializers.PrimaryKeyRelatedField(
-        queryset=Tweet.objects.all(), write_only=True, required=False, allow_null=True
-    )
+    reply_to_id = serializers.SerializerMethodField()
 
     replies = serializers.SerializerMethodField()
 
@@ -80,6 +78,9 @@ class TweetSerializer(serializers.ModelSerializer):
     def get_replies(self, obj):
         replies = obj.replies.all().order_by("created_at")
         return TweetSerializer(replies, many=True, context=self.context).data
+    
+    def get_reply_to_id(self, obj):
+        return obj.reply_to.id if obj.reply_to else None
 
     def create(self, validated_data):
         original_tweet = validated_data.pop("original_tweet_id", None)

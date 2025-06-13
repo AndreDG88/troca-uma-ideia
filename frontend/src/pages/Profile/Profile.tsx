@@ -1,86 +1,112 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import type { UserProfile } from '../../types/UserProfile';
 import TweetCard from '../../components/TweetCard/TweetCard';
 import api from '../../api/axios';
 
 const Profile = () => {
-  const { username } = useParams<{ username: string }>();  // explicitamente tipado
-  const { user } = useAuth();  // supondo que o contexto fornece token JWT também
+  const { username } = useParams<{ username: string }>();
+  const { user, setUser } = useAuth();
+  const navigate = useNavigate();
+
   const finalUsername = username || user?.username;
   const [profileData, setProfileData] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [following, setFollowing] = useState<boolean>(false);
+  const [following, setFollowing] = useState(false);
   const [btnLoading, setBtnLoading] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [newBio, setNewBio] = useState("");
+  const [newAvatar, setNewAvatar] = useState<File | null>(null);
 
   const isOwnProfile = user?.username === finalUsername;
 
+  // Carrega perfil de outro usuário ou o próprio
   useEffect(() => {
     const fetchProfile = async () => {
       setLoading(true);
       setError(null);
 
       try {
-        // Exemplo de endpoint, ajuste para o seu backend
-        const res = await api.get(`/api/profiles/${finalUsername}/`);
+        const res = await api.get(
+          isOwnProfile ? "/api/profile/" : `/api/profiles/${finalUsername}/`
+        );
         setProfileData(res.data);
-
-        // Supondo que a API retorne se você já segue essa pessoa
         setFollowing(res.data.is_following || false);
+        
+        if (isOwnProfile) {
+          setNewBio(res.data.profile.bio || "");
+        }
 
       } catch (err: unknown) {
+        setError("Erro ao buscar perfil.");
         if (err instanceof Error) {
-          setError('Erro ao buscar perfil: ' + err.message);
+          console.error(err.message);
         } else {
-          setError('Erro ao buscar perfil.');
+          console.error(err);
         }
-        console.error(err);
       } finally {
         setLoading(false);
       }
     };
 
-    if (finalUsername) {
-      fetchProfile();
-    }
-  }, [finalUsername]);
+    if (finalUsername) fetchProfile();
+  }, [finalUsername, isOwnProfile]);
 
   // Função para seguir ou deixar de seguir
   const toggleFollow = async () => {
     if (!finalUsername || isOwnProfile) return;
-
     setBtnLoading(true);
     try {
-      if (following) {
-        // Deixar de seguir
-        await api.post(`/api/profiles/${finalUsername}/unfollow/`);
-        setFollowing(false);
-        setProfileData((prev) => prev ? { 
-          ...prev, 
-          profile: { 
-            ...prev.profile, 
-            followers_count: (prev.profile.followers_count || 1) - 1 
-          } 
-        } : prev);
-      } else {
-        // Seguir
-        await api.post(`/api/profiles/${finalUsername}/follow/`);
-        setFollowing(true);
-        setProfileData((prev) => prev ? { 
-          ...prev, 
-          profile: { 
-            ...prev.profile, 
-            followers_count: (prev.profile.followers_count || 0) + 1 
-          } 
-        } : prev);
-      }
-    } catch (err) {
-      console.error('Erro ao seguir/deixar de seguir:', err);
-      alert('Não foi possível atualizar o status de seguir.');
-    } finally {
+        await api.post(`/api/users/${finalUsername}/follow/`);
+        setFollowing((prev) => !prev);
+        setProfileData((prev) =>
+          prev 
+            ? { 
+                ...prev, 
+                profile: { 
+                  ...prev.profile, 
+                  followers_count:
+                    (prev.profile.followers_count || 0) + (following ? -1 : 1),
+                }, 
+              } 
+            : prev
+        );
+      } catch (err: unknown) {
+          console.error("Erro no toggleFollow:", err);
+          alert("Erro ao seguir/deixar de seguir.");
+      } finally {
       setBtnLoading(false);
+    }
+  };
+
+  // Edições no perfil (avatar, nome, bio)
+  const handleSaveEdit = async () => {
+    const formData = new FormData();
+    formData.append('bio', newBio);
+    if (newAvatar) {
+      formData.append('avatar', newAvatar);
+    }
+
+    try {
+      const res = await api.patch('/api/myprofile/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      setProfileData((prev) =>
+        prev ? { ...prev, profile: res.data } : prev
+      );
+      setUser((prevUser) =>
+        prevUser ? { ...prevUser, profile: res.data } : prevUser
+      );
+      setEditing(false);
+      setNewAvatar(null);
+    } catch (err) {
+      alert('Erro ao salvar perfil.');
+      console.error(err);
     }
   };
 
@@ -98,21 +124,50 @@ const Profile = () => {
           alt="Avatar"
           style={{ width: 120, height: 120, borderRadius: '50%' }}
         />
-        <h2>{profile.name || finalUsername} (@{finalUsername})</h2>
-        <p>{profile.bio}</p>
-        <p>
-          <strong>{profile.followers_count || 0}</strong> seguidores ·{' '}
-          <strong>{profile.following_count || 0}</strong> seguindo
-        </p>
 
-        {isOwnProfile ? (
-          <button onClick={() => alert('Funcionalidade de editar perfil ainda não implementada')}>
-            Editar perfil
-          </button>
+        {editing && isOwnProfile ? (
+          <>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                if (e.target.files) setNewAvatar(e.target.files[0]);
+              }}
+            />
+
+            <textarea
+              value={newBio}
+              onChange={(e) => setNewBio(e.target.value)}
+              placeholder="Bio"
+            />
+            <button onClick={handleSaveEdit}>Salvar</button>
+            <button onClick={() => setEditing(false)}>Cancelar</button>
+          </>
         ) : (
-          <button onClick={toggleFollow} disabled={btnLoading}>
-            {btnLoading ? 'Carregando...' : (following ? 'Deixar de seguir' : 'Seguir')}
-          </button>
+          <>
+            <h2>
+              {/* Exibe username fixo */}
+              @{finalUsername}
+            </h2>
+            <p>
+              <strong>{profile.followers_count || 0}</strong> seguidores ·{' '}
+              <strong>{profile.following_count || 0}</strong> seguindo
+            </p>
+            {/* Bio logo abaixo dos números */}
+            <p>{profile.bio}</p>
+
+            {isOwnProfile ? (
+              <button onClick={() => setEditing(true)}>Editar perfil</button>
+            ) : (
+              <button onClick={toggleFollow} disabled={btnLoading}>
+                {btnLoading
+                  ? 'Carregando...'
+                  : following
+                  ? 'Deixar de seguir'
+                  : 'Seguir'}
+              </button>
+            )}
+          </>
         )}
       </div>
 
@@ -123,6 +178,10 @@ const Profile = () => {
         ) : (
           tweets.map((tweet) => <TweetCard key={tweet.id} tweet={tweet} />)
         )}
+      </div>
+
+      <div style={{ marginTop: "2rem" }}>
+        <button onClick={() => navigate("/")}>Voltar para Home</button>
       </div>
     </div>
   );

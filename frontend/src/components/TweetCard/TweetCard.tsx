@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import api from "../../api/axios";
 import type { Tweet } from "../../types/UserProfile";
 import { useAuth } from "../../context/AuthContext";
@@ -6,15 +7,22 @@ import { useAuth } from "../../context/AuthContext";
 interface TweetCardProps {
   tweet: Tweet;
   onLiked?: () => void;
+  onCommented?: () => void;
+  onRepapeared?: () => void;
 }
 
-const TweetCard = ({ tweet, onLiked }: TweetCardProps) => {
+const TweetCard = ({ tweet, onLiked, onCommented, onRepapeared }: TweetCardProps) => {
   const [likesCount, setLikesCount] = useState(tweet.likes_count || 0);
   const [loading, setLoading] = useState(false);
+  const [repapearCount, setRepapearCount] = useState(tweet.repapear_count || 0);
+  const [commentBoxVisible, setCommentBoxVisible] = useState(false);
+  const [commentContent, setCommentContent] = useState("");
+
   const { token } = useAuth(); // Usa o token diretamente do AuthContext
 
   useEffect(() => {
     setLikesCount(tweet.likes_count || 0);
+    setRepapearCount(tweet.repapear_count || 0);
   }, [tweet]);
 
   // Alterna entre curtir e descurtir o tweet
@@ -53,6 +61,53 @@ const TweetCard = ({ tweet, onLiked }: TweetCardProps) => {
     }
   };
 
+  // Enviar comentário
+  const handleCommentSubmit = async () => {
+    if (!token || !commentContent.trim()) return;
+
+    try {
+      await api.post(
+        `/api/tweets/`,
+        {
+          content: commentContent,
+          reply_to_id: tweet.id,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      setCommentContent("");
+      setCommentBoxVisible(false);
+      onCommented?.();
+    } catch (error) {
+      console.error("Erro ao comentar:", error);
+    }
+  };
+
+  // Fazer RePapo
+  const handleRepapo = async () => {
+    if (!token || loading) return;
+
+    try {
+      await api.post(
+        `/api/tweets/`,
+        {
+          is_repapo: true,
+          original_tweet_id: tweet.id,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      setRepapearCount((prev) => prev + 1);
+      onRepapeared?.();
+    } catch (error) {
+      console.error("Erro ao repapear:", error);
+    }
+  };
+
   // Montar URL completa do avatar
   const avatarUrl = tweet.user?.profile?.avatar
     ? tweet.user.profile.avatar.startsWith("http")
@@ -64,28 +119,74 @@ const TweetCard = ({ tweet, onLiked }: TweetCardProps) => {
     <li className="tweet-card border rounded p-3 mb-3">
       {/* Header com avatar e nome do usuário */}
       <div className="d-flex align-items-center mb-2">
-        <img
-          src={avatarUrl}
-          alt={`${tweet.user?.username}'s avatar`}
-          style={{ width: 40, height: 40, borderRadius: "50%", marginRight: 10 }}
-        />
+        <Link 
+          to={`/profile/${tweet.user?.username}`} 
+          className="d-flex align-items-center text-dark text-decoration-none"
+          >
+          <img
+            src={avatarUrl}
+            alt={`${tweet.user?.username}'s avatar`}
+            style={{ width: 40, height: 40, borderRadius: "50%", marginRight: 10 }}
+          />
         <strong>{tweet.user?.username || "Usuário"}</strong>
+        </Link>
       </div>
 
       {/* Conteúdo do tweet */}
       <p>{tweet.content}</p>
 
-      {/* Botão de curtir/descurtir */}
-      <button
-        type="button"
-        onClick={handleLikeToggle}
-        disabled={loading}
-        className="btn btn-sm btn-outline-danger d-flex align-items-center gap-1"
-      >
-        <span style={{ fontSize: "1.2rem", color: "#dc3545" }}>❤️</span>
-        <span>Curtir</span>
-        <span> {likesCount}</span>
-      </button>
+      {/* Botões: Curtir / Comentar / Repapo */}
+      <div className="d-flex gap-2 mt-2">
+        <button
+          type="button"
+          onClick={handleLikeToggle}
+          disabled={loading}
+          className="btn btn-sm btn-outline-danger d-flex align-items-center gap-1"
+        >
+          <span style={{ fontSize: "1.2rem" }}>❤️</span>
+          <span>{likesCount}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setCommentBoxVisible((prev) => !prev)}
+          className="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1"
+        >
+          💬 Comentar
+        </button>
+
+        <button
+          type="button"
+          onClick={handleRepapo}
+          className="btn btn-sm btn-outline-info d-flex align-items-center gap-1"
+        >
+          🔁 RePapear ({repapearCount})
+        </button>
+      </div>
+
+      {/* Caixa de comentário */}
+      {commentBoxVisible && (
+        <div className="mt-2">
+          <textarea
+            className="form-control mb-2"
+            placeholder="Escreva um comentário..."
+            value={commentContent}
+            onChange={(e) => setCommentContent(e.target.value)}
+          />
+          <button onClick={handleCommentSubmit} className="btn btn-primary btn-sm">
+            Enviar
+          </button>
+        </div>
+      )}
+
+      {/* Renderizar replies */}
+      {tweet.replies && tweet.replies.length > 0 && (
+        <ul className="mt-3 ps-3 border-start">
+          {tweet.replies.map((reply) => (
+            <TweetCard key={reply.id} tweet={reply} />
+          ))}
+        </ul>
+      )}
     </li>
   );
 };

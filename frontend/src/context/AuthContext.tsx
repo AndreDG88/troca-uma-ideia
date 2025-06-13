@@ -18,22 +18,26 @@ const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
+
   // Pega token do localStorage (se já estiver salvo)
   const [token, setToken] = useState<string | null>(() => {
     return localStorage.getItem("accessToken");
   });
-  const [loading, setLoading] = useState(true);
 
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   // Cria a função logout
   const logout = useCallback(() => {
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("accessToken");
+    localStorage.removeItem("token");
     setUser(null);
     setToken(null);
-    localStorage.removeItem("token");
+
+    // Remove token do cabeçalho das próximas requisições
     delete api.defaults.headers.common["Authorization"];
+
     navigate("/login");
   }, [navigate]);
 
@@ -45,8 +49,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const res = await api.post("/api/token/refresh/", { refresh });
       const newAccess = res.data.access;
+
       setToken(newAccess);
       localStorage.setItem("accessToken", newAccess);
+
       api.defaults.headers.common["Authorization"] = `Bearer ${newAccess}`;
     } catch {
       logout();
@@ -66,6 +72,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUser(res.data);
+
+      // Configura o token para futuras requisições
       api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     } catch {
       await refreshToken();
@@ -85,11 +93,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     const { access, refresh } = response.data;
+
     setToken(access);
     localStorage.setItem("accessToken", access);
     localStorage.setItem("refreshToken", refresh);
-    // Define o token como header padrão do axios
-    api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+    api.defaults.headers.common["Authorization"] = `Bearer ${access}`;
 
     // Busca o perfil autenticado
     const profile = await api.get("/api/profile/");

@@ -10,9 +10,29 @@ import Layout from "./components/Layout/Layout";
 const App = () => {
   return (
     <Routes>
+      {/* Rotas públicas */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
+      {/* Rota profile */}
+      <Route
+        path="/profile"
+        element={
+          <PrivateRoute>
+            <Profile />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/profile/:username"
+        element={
+          <PrivateRoute>
+            <Profile />
+          </PrivateRoute>
+        }
+      />
+
+      {/* Rotas que usam o Layout padrão */}
       <Route element={<Layout />}>
         <Route
           path="/"
@@ -30,16 +50,9 @@ const App = () => {
             </PrivateRoute>
           }
         />
-        <Route
-          path="/profile"
-          element={
-            <PrivateRoute>
-              <Profile />
-            </PrivateRoute>
-          }
-        />
       </Route>
 
+      {/* Página não encontrada */}
       <Route path="*" element={<h2>Página não encontrada</h2>} />
     </Routes>
   );
