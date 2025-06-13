@@ -78,7 +78,7 @@ class TweetSerializer(serializers.ModelSerializer):
     def get_replies(self, obj):
         replies = obj.replies.all().order_by("created_at")
         return TweetSerializer(replies, many=True, context=self.context).data
-    
+
     def get_reply_to_id(self, obj):
         return obj.reply_to.id if obj.reply_to else None
 
