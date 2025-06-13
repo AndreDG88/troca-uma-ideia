@@ -86,6 +86,8 @@ class TweetSerializer(serializers.ModelSerializer):
         reply_to = validated_data.pop("reply_to_id", None)
         is_repapo = validated_data.get("is_repapo", False)
 
+        validated_data.pop("user", None)
+
         tweet = Tweet.objects.create(
             user=self.context["request"].user,
             original_tweet=original_tweet,
