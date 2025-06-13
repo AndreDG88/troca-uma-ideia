@@ -9,7 +9,11 @@ from talkzone.models import Tweet
 @pytest.mark.django_db
 def test_create_tweet():
     user = User.objects.create_user(username="testeuser", password="senha123")
-    tweet = Tweet.objects.create(user=user, content="Primeiro tweet de teste")
+    tweet = Tweet.objects.create(
+        user=user,
+        content="Primeiro tweet de teste",
+        is_repapo=False
+    )
     assert tweet.content == "Primeiro tweet de teste"
     assert tweet.user.username == "testeuser"
 
