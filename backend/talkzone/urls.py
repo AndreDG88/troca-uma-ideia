@@ -11,6 +11,7 @@ from .views import (
     TimelineView,
     ToggleFollowView,
     ToggleLikeTweetView,
+    TrendsView,
     TweetDetailView,
     TweetListCreateView,
     UserDetailView,
@@ -31,6 +32,7 @@ def talkzone_home(request):
         "profile": "/api/profile/",
         "my_profile": "/api/myprofile/",
         "profile_detail": "/api/profiles/<str:username>/",
+        "trends": "/api/trends/",
     }
     return JsonResponse(
         {
@@ -74,4 +76,6 @@ urlpatterns = [
         FollowersFollowingView.as_view(),
         name="followers-following",
     ),
+    # Trends
+    path("trends/", TrendsView, name="trends"),
 ]

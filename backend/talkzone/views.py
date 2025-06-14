@@ -1,6 +1,10 @@
+import re
+from collections import Counter
+
 from django.contrib.auth.models import User
 from django.shortcuts import render
 from rest_framework import generics, permissions, status
+from rest_framework.decorators import api_view
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
@@ -224,3 +228,27 @@ class FollowersFollowingView(APIView):
         ]
 
         return Response({"followers": followers, "following": following})
+
+
+@api_view(["GET"])
+def TrendsView(request):
+    # Número de tweets mais recentes a considerar
+    limit = min(int(request.query_params.get("limit", 100)), 500)
+    tweets = Tweet.objects.order_by("-created_at")[:limit]
+
+    hashtag_pattern = re.compile(r"#\w+")
+    hashtags = []
+
+    for tweet in tweets:
+        matches = set(hashtag_pattern.findall(tweet.content))
+        hashtags.extend([tag.lower() for tag in matches])
+
+    if not hashtags:
+        return Response(
+            {"message": "Nenhuma hashtag encontrada nos tweets."}, status=200
+        )
+
+    count = Counter(hashtags)
+    trends = [{"hashtag": tag, "count": count[tag]} for tag in count.most_common(10)]
+
+    return Response(trends)
