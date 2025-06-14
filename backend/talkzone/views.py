@@ -249,6 +249,6 @@ def TrendsView(request):
         )
 
     count = Counter(hashtags)
-    trends = [{"hashtag": tag, "count": count[tag]} for tag in count.most_common(10)]
+    trends = [{"hashtag": tag, "count": cnt} for tag, cnt in count.most_common(10)]
 
     return Response(trends)

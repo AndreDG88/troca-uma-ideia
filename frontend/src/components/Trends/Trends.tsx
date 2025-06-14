@@ -13,7 +13,7 @@ export default function Trends() {
   useEffect(() => {
     const fetchTrends = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/trends/`);
+        const response = await fetch("https://andredg88.pythonanywhere.com/api/trends/");
         const data = await response.json();
         if (Array.isArray(data)) {
           setTrends(data);
