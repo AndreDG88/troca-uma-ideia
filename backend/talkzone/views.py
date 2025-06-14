@@ -236,7 +236,7 @@ def TrendsView(request):
     limit = min(int(request.query_params.get("limit", 100)), 500)
     tweets = Tweet.objects.order_by("-created_at")[:limit]
 
-    hashtag_pattern = re.compile(r"#\w+")
+    hashtag_pattern = re.compile(r"#([^\s#]+)")
     hashtags = []
 
     for tweet in tweets:

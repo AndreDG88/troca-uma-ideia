@@ -43,7 +43,7 @@ export default function Trends() {
       <ul>
         {trends.map((trend, index) => (
           <li key={index}>
-            <strong>{trend.hashtag}</strong> – {trend.count} tweets
+            <strong>{trend.hashtag}</strong> – {trend.count} Papos
           </li>
         ))}
       </ul>
