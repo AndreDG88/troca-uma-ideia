@@ -59,7 +59,7 @@ const Profile = () => {
     if (!finalUsername || isOwnProfile) return;
     setBtnLoading(true);
     try {
-        await api.post(`/api/users/${finalUsername}/follow/`);
+        await api.post(`/api/profiles/${finalUsername}/follow/`);
         setFollowing((prev) => !prev);
         setProfileData((prev) =>
           prev 

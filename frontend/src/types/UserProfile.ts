@@ -7,8 +7,8 @@ export interface Tweet {
   liked_by_user: boolean;
   liked?: boolean;
   is_repapo?: boolean;
-  reply_to_id?: number | null;
-  original_tweet?: number | null;
+  reply_to?: number | null;
+  original_tweet?: Tweet | null;
   replies?: Tweet[];
   repapear_count?: number;
   user: {

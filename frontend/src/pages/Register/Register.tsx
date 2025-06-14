@@ -113,7 +113,7 @@ const Register = () => {
             value={passwordConfirm}
             onChange={(e) => setPasswordConfirm(e.target.value)}
             required
-            minLength={6}
+            minLength={8}
           />
         </div>
 

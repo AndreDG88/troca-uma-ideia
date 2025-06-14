@@ -19,13 +19,16 @@ const Home = () => {
   const [timelinePapos, setTimelinePapos] = useState<Tweet[]>([]);
   const [view, setView] = useState<"feed" | "sendPapo" | "timeline">("feed");
 
-  const apenasPaposNormais = (tweets: Tweet[]) =>
-    tweets.filter((t) => !t.reply_to_id && !t.is_repapo);
+  const apenasOriginais = (tweets: Tweet[]) =>
+    tweets.filter((t) => !t.reply_to && !t.is_repapo);
+
+  const apenasNaoComentarios = (tweets: Tweet[]) =>
+    tweets.filter((t) => !t.reply_to);
 
   const fetchUserPapos = useCallback(async () => {
     try {
       const response = await api.get("/api/mytweets/");
-      setUserPapos(apenasPaposNormais(response.data.slice(0, 10)));
+      setUserPapos(apenasOriginais(response.data.slice(0, 10)));
     } catch (error) {
       console.error("Erro ao buscar papos do usuário:", error);
     }
@@ -39,7 +42,7 @@ const Home = () => {
   const fetchTimelinePapos = async () => {
     try {
       const response = await api.get("/api/timeline/");
-      setTimelinePapos(apenasPaposNormais(response.data));
+      setTimelinePapos(apenasNaoComentarios(response.data));
     } catch (error) {
       console.error("Erro ao buscar timeline:", error);
     }

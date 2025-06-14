@@ -18,7 +18,7 @@ const TweetCard = ({ tweet, onLiked, onCommented, onRepapeared }: TweetCardProps
   const [commentBoxVisible, setCommentBoxVisible] = useState(false);
   const [commentContent, setCommentContent] = useState("");
 
-  const { token } = useAuth(); // Usa o token diretamente do AuthContext
+  const { token, user } = useAuth(); // Usa o token diretamente do AuthContext
 
   useEffect(() => {
     setLikesCount(tweet.likes_count || 0);
@@ -108,6 +108,26 @@ const TweetCard = ({ tweet, onLiked, onCommented, onRepapeared }: TweetCardProps
     }
   };
 
+  // Excluir papo
+  const handleDeleteTweet = async () => {
+    if (!token || loading) return;
+    const confirmDelete = window.confirm("Tem certeza que deseja excluir este papo?");
+    if (!confirmDelete) return;
+
+    setLoading(true);
+    try {
+      await api.delete(`/api/tweets/${tweet.id}/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      onLiked?.(); // ou criar um onDeleted se preferir
+    } catch (error) {
+      console.error("Erro ao excluir o tweet:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Montar URL completa do avatar
   const avatarUrl = tweet.user?.profile?.avatar
     ? tweet.user.profile.avatar.startsWith("http")
@@ -132,6 +152,16 @@ const TweetCard = ({ tweet, onLiked, onCommented, onRepapeared }: TweetCardProps
         </Link>
       </div>
 
+      {/* SE FOR REPAPO: Exibe conteúdo original */}
+      {tweet.is_repapo && tweet.original_tweet && (
+        <div className="alert alert-light p-2 mb-2">
+          <small className="text-muted">🔁 RePapearam este papo:</small>
+          <p className="mb-0">
+            <strong>@{tweet.original_tweet.user?.username}</strong>: {tweet.original_tweet.content}
+          </p>
+        </div>
+      )}
+      
       {/* Conteúdo do tweet */}
       <p>{tweet.content}</p>
 
@@ -162,6 +192,16 @@ const TweetCard = ({ tweet, onLiked, onCommented, onRepapeared }: TweetCardProps
         >
           🔁 RePapear ({repapearCount})
         </button>
+
+        {tweet.user?.id === user?.id && (
+          <button
+            type="button"
+            onClick={handleDeleteTweet}
+            className="btn btn-sm btn-outline-dark d-flex align-items-center gap-1"
+          >
+            🗑️ Excluir
+          </button>
+        )}
       </div>
 
       {/* Caixa de comentário */}
