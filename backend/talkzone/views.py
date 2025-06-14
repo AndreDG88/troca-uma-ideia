@@ -232,7 +232,7 @@ class FollowersFollowingView(APIView):
 
 @api_view(["GET"])
 def TrendsView(request):
-    # Número de tweets mais recentes a considerar
+    # Número de tweets(papos) mais recentes a considerar
     limit = min(int(request.query_params.get("limit", 100)), 500)
     tweets = Tweet.objects.order_by("-created_at")[:limit]
 
