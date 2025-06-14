@@ -5,6 +5,7 @@ import type { Tweet } from "../../types/UserProfile";
 import api from "../../api/axios";
 import SendPapo from "../SendPapo/SendPapo";
 import TweetCard from "../../components/TweetCard/TweetCard";
+import Trends from "../../components/Trends/Trends";
 import { useCallback } from "react";
 
 const Home = () => {
@@ -95,42 +96,50 @@ const Home = () => {
   }
 
   return (
-    <div className="container mt-5 text-center">
-      <h1>Bem-vindo, {user?.username ? user.username : "usuário"}!</h1>
+    <div className="d-flex justify-content-between flex-wrap align-items-start gap-4">
+      <div className="text-center">
+        <h1>Bem-vindo, {user?.username ? user.username : "usuário"}!</h1>
 
-      {user?.profile?.avatar && (
-        <div className="my-4">
-          <img
-            src={`${user.profile.avatar}?t=${new Date().getTime()}`}
-            alt="Avatar do usuário"
-            style={{
-              width: "120px",
-              height: "120px",
-              borderRadius: "50%",
-              objectFit: "cover",
-              border: "2px solid #ccc",
-            }}
-          />
-        </div>
-      )}
+        {user?.profile?.avatar && (
+          <div className="my-4">
+            <img
+              src={`${user.profile.avatar}?t=${new Date().getTime()}`}
+              alt="Avatar do usuário"
+              style={{
+                width: "120px",
+                height: "120px",
+                borderRadius: "50%",
+                objectFit: "cover",
+                border: "2px solid #ccc",
+              }}
+            />
+          </div>
+        )}
 
-      <button
-        className="btn btn-outline-primary mb-3"
-        onClick={handleChangeAvatarClick}
-        disabled={uploading}
-      >
-        {uploading ? "Carregando..." : "Alterar Avatar"}
-      </button>
+        <button
+          className="btn btn-outline-primary mb-3"
+          onClick={handleChangeAvatarClick}
+          disabled={uploading}
+        >
+          {uploading ? "Carregando..." : "Alterar Avatar"}
+        </button>
 
-      <input
-        type="file"
-        ref={fileInputRef}
-        style={{ display: "none" }}
-        onChange={handleFileChange}
-        accept="image/*"
-      />
+        <input
+          type="file"
+          ref={fileInputRef}
+          style={{ display: "none" }}
+          onChange={handleFileChange}
+          accept="image/*"
+        />
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
+        {error && <p style={{ color: "red" }}>{error}</p>}
+      
+
+      <div className="flex-grow-1">
+        <h3 className="mb-3">Papos em alta!</h3>
+        <Trends />
+      </div>
+    </div>
 
       <div className="d-grid gap-3 mt-4">
         {view === "feed" && (
