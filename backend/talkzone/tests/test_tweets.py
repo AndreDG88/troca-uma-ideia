@@ -82,7 +82,7 @@ def test_user_can_update_own_tweet(auth_client, create_user):
     response = client.put(
         f"/api/tweets/{tweet.id}/", {"content": "Editado"}, format="json"
     )
-    
+
     assert response.status_code == 200
     assert response.data["content"] == "Editado"
 
@@ -115,7 +115,7 @@ def test_user_can_delete_own_tweet(create_user):
     refresh = RefreshToken.for_user(user)
     token = str(refresh.access_token)
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
-    
+
     response = client.delete(f"/api/tweets/{tweet.id}/")
     assert response.status_code == 204
 
@@ -154,7 +154,7 @@ def test_toggle_like(auth_client):
     # Chama a rota de like
     response = client.post(f"/api/tweets/{tweet.id}/like/")
     assert response.status_code == 200
-    assert response.data["detail"] == "Curtida."
+    assert response.data["detail"] == "Tweet curtido."
 
     response = client.post(f"/api/tweets/{tweet.id}/like/")
     assert response.status_code == 200
