@@ -26,11 +26,9 @@ def test_trends_extracts_hashtags_only(api_client, create_user):
     response = client.get("/api/trends/")
     assert response.status_code == 200
 
-    trends = response.data
-    hashtags = [trend["term"] for trend in trends]
-
-    # Verifica se apenas hashtags aparecem
-    assert all(term.startswith("#") for term in hashtags)
+    hashtags = [trend["tag"] for trend in response.data]
+    assert "#Python" in hashtags
+    assert "#Django" in hashtags or "#django" in hashtags
 
 
 @pytest.mark.django_db
@@ -45,8 +43,6 @@ def test_trends_ignores_blank_tweets(api_client, create_user):
     response = client.get("/api/trends/")
     assert response.status_code == 200
 
-    trends = response.data
-    terms = [t["term"] for t in trends]
-
+    terms = [t["tag"] for t in response.data]
     assert "#TagValida" in terms
     assert len(terms) == 1

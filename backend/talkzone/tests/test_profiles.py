@@ -71,14 +71,12 @@ def test_toggle_follow(api_client, create_user):
     # Segue user2
     response = client.post(f"/api/profiles/{user2.username}/follow/")
     assert response.status_code == 200
-    assert "following" in response.data
-    assert response.data["following"] is True
+    assert response.data["detail"] == f"Você agora está seguindo {user2.username}."
 
     # Deixa de seguir user2
     response = client.post(f"/api/profiles/{user2.username}/follow/")
     assert response.status_code == 200
-    assert "following" in response.data
-    assert response.data["following"] is False
+    assert response.data["detail"] == f"Você deixou de seguir {user2.username}."
 
 
 @pytest.mark.django_db

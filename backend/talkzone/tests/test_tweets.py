@@ -161,14 +161,11 @@ def test_toggle_like(auth_client):
     # Chama a rota de like
     response = client.post(f"/api/tweets/{tweet.id}/like/")
     assert response.status_code == 200
-    assert "liked" in response.data
-    assert response.data["liked"] is True
+    assert response.data["detail"] == "Tweet curtido."
 
     response = client.post(f"/api/tweets/{tweet.id}/like/")
     assert response.status_code == 200
-
-    assert "liked" in response.data
-    assert response.data["liked"] is False
+    assert response.data["detail"] == "Tweet descurtido."
 
 
 # Teste de reply a outro tweet
