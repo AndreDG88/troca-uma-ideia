@@ -9,6 +9,11 @@ from talkzone.models import Profile
 
 
 @pytest.fixture
+def api_client():
+    return APIClient()
+
+
+@pytest.fixture
 def create_user(db):
     def _create_user(username=None, email=None, password="senha123"):
         if not username:

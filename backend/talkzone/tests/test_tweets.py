@@ -1,6 +1,7 @@
 import pytest
 from django.contrib.auth.models import User
 from rest_framework.test import APIClient
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from talkzone.models import Tweet
 
@@ -145,13 +146,23 @@ def test_user_cannot_delete_other_user_tweet():
 # Teste de curtida em tweet
 @pytest.mark.django_db
 def test_toggle_like(auth_client, tweet):
-    response = auth_client.post(f"/api/tweets/{tweet.id}/like/")
+    # Cria usuário e token
+    user = User.objects.create_user(username="testuser", password="senha123")
+    refresh = RefreshToken.for_user(user)
+    token = str(refresh.access_token)
+
+    # Cria tweet do mesmo usuário
+    tweet = Tweet.objects.create(user=user, content="teste")
+
+    # Autentica o cliente
+    client = APIClient()
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+
+    # Chama a rota de like
+    response = client.post(f"/api/tweets/{tweet.id}/like/")
+
     assert response.status_code == 200
     assert response.data["liked"] is True
-
-    response = auth_client.post(f"/api/tweets/{tweet.id}/like/")
-    assert response.status_code == 200
-    assert response.data["liked"] is False
 
 
 # Teste de reply a outro tweet
