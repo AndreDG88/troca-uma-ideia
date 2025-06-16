@@ -29,6 +29,8 @@ def test_get_my_profile_authorized(create_user_and_token):
     assert response.status_code == 200
     assert response.data["bio"] == "Bio original"
     assert "avatar" in response.data
+    assert "followers_count" in response.data
+    assert "following_count" in response.data
 
 
 # Testa se um usuário autenticado consegue atualizar sua bio com PUT.
@@ -42,7 +44,7 @@ def test_update_my_profile_bio(create_user_and_token):
         "bio": "Nova bio via teste!",
     }
 
-    response = client.put("/api/myprofile/", data)
+    response = client.patch("/api/myprofile/", data)
     assert response.status_code == 200
     assert response.data["bio"] == "Nova bio via teste!"
 

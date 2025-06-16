@@ -4,10 +4,20 @@ import pytest
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from PIL import Image
-from rest_framework import status
 from rest_framework.test import APIClient
 
 from talkzone.models import Profile
+
+
+@pytest.fixture
+def create_user_and_token(db):
+    user = User.objects.create_user(username="testuser2", password="testpass123")
+    Profile.objects.get_or_create(user=user)
+    from rest_framework_simplejwt.tokens import RefreshToken
+
+    refresh = RefreshToken.for_user(user)
+    token = str(refresh.access_token)
+    return user, token
 
 
 @pytest.mark.django_db
@@ -32,8 +42,6 @@ def test_avatar_upload_and_retrieval(create_user_and_token):
 
     data = {"avatar": avatar, "bio": ""}
     response = client.patch("/api/myprofile/", data, format="multipart")
-    print(response.status_code)
-    print(response.data)
     assert response.status_code == 200
     assert "avatar" in response.data
 
@@ -48,3 +56,45 @@ def test_user_serializer_includes_profile():
     assert response.status_code == 200
     assert "profile" in response.data
     assert "avatar" in response.data["profile"]
+    assert "followers_count" in response.data["profile"]
+    assert "following_count" in response.data["profile"]
+
+
+@pytest.mark.django_db
+def test_toggle_follow(api_client, create_user):
+    user1 = create_user("user1", "user1@example.com", "senha123")
+    user2 = create_user("user2", "user2@example.com", "senha456")
+
+    client = APIClient()
+    client.force_authenticate(user=user1)
+
+    # Segue user2
+    response = client.post(f"/api/profiles/{user2.username}/follow/")
+    assert response.status_code == 200
+    assert response.data["following"] is True
+
+    # Verifica se user1 está nos followers de user2
+    user2.refresh_from_db()
+    assert user1.profile in user2.profile.followers.all()
+
+    # Deixa de seguir user2
+    response = client.post(f"/api/profiles/{user2.username}/follow/")
+    assert response.status_code == 200
+    assert response.data["following"] is False
+
+    user2.refresh_from_db()
+    assert user1.profile not in user2.profile.followers.all()
+
+
+@pytest.mark.django_db
+def test_toggle_follow_self(api_client, create_user):
+    user = create_user("user", "user@example.com", "senha123")
+
+    client = APIClient()
+    client.force_authenticate(user=user)
+
+    # Tenta seguir a si mesmo (deve retornar erro 400 ou ser ignorado)
+    response = client.post(f"/api/profiles/{user.username}/follow/")
+    assert response.status_code in (400, 200)
+    if response.status_code == 200:
+        assert response.data["following"] is False

@@ -140,3 +140,65 @@ def test_user_cannot_delete_other_user_tweet():
 
     response = client.delete(f"/api/tweets/{tweet.id}/")
     assert response.status_code == 403
+
+
+# Teste de curtida em tweet
+@pytest.mark.django_db
+def test_toggle_like(auth_client, tweet):
+    response = auth_client.post(f"/api/tweets/{tweet.id}/like/")
+    assert response.status_code == 200
+    assert response.data["liked"] is True
+
+    response = auth_client.post(f"/api/tweets/{tweet.id}/like/")
+    assert response.status_code == 200
+    assert response.data["liked"] is False
+
+
+# Teste de reply a outro tweet
+@pytest.mark.django_db
+def test_reply_to_tweet(auth_client, tweet):
+    response = auth_client.post(
+        "/api/tweets/", {"content": "Resposta", "reply_to_id": tweet.id}
+    )
+    assert response.status_code == 201
+    assert response.data["reply_to"] == tweet.id
+
+
+# Teste de repapo (retweet)
+@pytest.mark.django_db
+def test_repapear_tweet(auth_client, tweet):
+    response = auth_client.post(
+        "/api/tweets/", {"is_repapo": True, "original_tweet_id": tweet.id}
+    )
+    assert response.status_code == 201
+    assert response.data["is_repapo"] is True
+    assert response.data["original_tweet"]["id"] == tweet.id
+
+
+# Teste de contagem de repapo
+@pytest.mark.django_db
+def test_repapo_count(auth_client, tweet):
+    # Cria 2 repapos
+    for _ in range(2):
+        auth_client.post(
+            "/api/tweets/", {"is_repapo": True, "original_tweet_id": tweet.id}
+        )
+    response = auth_client.get(f"/api/tweets/{tweet.id}/")
+    assert response.status_code == 200
+    assert response.data["repapear_count"] == 2
+
+
+# Teste de reply encadeado
+@pytest.mark.django_db
+def test_nested_replies(auth_client, tweet):
+    reply1 = auth_client.post(
+        "/api/tweets/", {"content": "Reply 1", "reply_to_id": tweet.id}
+    ).data
+    reply2 = auth_client.post(
+        "/api/tweets/", {"content": "Reply 2", "reply_to_id": reply1["id"]}
+    ).data
+
+    response = auth_client.get(f"/api/tweets/{tweet.id}/")
+    assert response.status_code == 200
+    replies = response.data["replies"]
+    assert any(r["id"] == reply1["id"] for r in replies)
