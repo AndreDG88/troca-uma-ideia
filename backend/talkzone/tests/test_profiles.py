@@ -62,8 +62,8 @@ def test_user_serializer_includes_profile():
 
 @pytest.mark.django_db
 def test_toggle_follow(api_client, create_user):
-    user1 = create_user("user1", "user1@example.com", "senha123")
-    user2 = create_user("user2", "user2@example.com", "senha456")
+    user1 = create_user(username="user1", email="user1@example.com")
+    user2 = create_user(username="user2", email="user2@example.com")
 
     client = APIClient()
     client.force_authenticate(user=user1)

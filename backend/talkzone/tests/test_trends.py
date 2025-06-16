@@ -7,7 +7,7 @@ from talkzone.models import Tweet
 
 @pytest.mark.django_db
 def test_trends_extracts_hashtags_only(api_client, create_user):
-    user = create_user("trenduser", "trend@example.com", "senha123")
+    user = create_user(username="trenduser", email="trend@example.com")
     client = APIClient()
     client.force_authenticate(user=user)
 
