@@ -145,7 +145,7 @@ def test_user_cannot_delete_other_user_tweet():
 
 # Teste de curtida em tweet
 @pytest.mark.django_db
-def test_toggle_like(auth_client, tweet):
+def test_toggle_like(auth_client):
     # Cria usuário e token
     user = User.objects.create_user(username="testuser", password="senha123")
     refresh = RefreshToken.for_user(user)
@@ -160,9 +160,15 @@ def test_toggle_like(auth_client, tweet):
 
     # Chama a rota de like
     response = client.post(f"/api/tweets/{tweet.id}/like/")
-
     assert response.status_code == 200
+    assert "liked" in response.data
     assert response.data["liked"] is True
+
+    response = client.post(f"/api/tweets/{tweet.id}/like/")
+    assert response.status_code == 200
+
+    assert "liked" in response.data
+    assert response.data["liked"] is False
 
 
 # Teste de reply a outro tweet
