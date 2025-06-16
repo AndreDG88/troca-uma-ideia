@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Link } from "react-router-dom";
+import styles from "./Login.module.css"
 
 const Login = () => {
   const { login } = useAuth(); // Pega a função login do contexto
@@ -20,70 +21,67 @@ const Login = () => {
   };
 
   return (
-    <div className="container mt-5" style={{ maxWidth: "400px" }}>
+    <div className={styles.backgroundWrapper}>
+      <video autoPlay loop muted className={styles.videoBackground}>
+        <source src="/media/background-login.mp4" type="video/mp4" />
+        Seu navegador não suporta vídeos em HTML5.
+      </video>
 
-      <div className="text-center mb-4">
-        {/* Substir o src pela sua logo depois */}
-        <img
-          src="/logo-placeholder.png"
-          alt="Logo Troca uma ideia!"
-          style={{ width: "120px", marginBottom: "1rem" }}
-        />
+      <div className={styles.contentWrapper}>
+        <div className={styles.infoSection}>
+          <img
+            src="/media/troca-uma-ideia_logo.png"
+            alt="Logo Troca uma ideia!"
+            className={styles.logo}
+          />
+          <p className={styles.infoText}>
+            Bem-vindo ao <strong>Troca uma ideia!</strong> — a rede social para
+            compartilhar pensamentos, conectar ideias e construir conversas.
+          </p>
+        </div>
+        
+      <div className={styles.formSection}>
+        <h2 className={styles.title}>Login</h2>
+
+        {error && <div className={styles.error}>{error}</div>}
+
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.formGroup}>
+            <label htmlFor="username">Usuário</label>
+              <input
+                type="text"
+                id="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                autoFocus
+              />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="password">Senha</label>
+              <input
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            <button type="submit" className={styles.button}>
+              Entrar
+            </button>
+          </form>
+
+          <p className={styles.registerText}>
+            Não tem uma conta?{" "}
+            <Link to="/register" className={styles.registerLink}>
+              Cadastre-se aqui
+            </Link>
+          </p>
+        </div>
       </div>
-
-      <p className="text-center mb-4">
-        Bem-vindo ao <strong>Troca uma ideia!</strong> — a rede social para compartilhar seus pensamentos e trocar ideias.
-      </p>
-
-      <h2 className="mb-4 text-center">Login</h2>
-
-      {error && (
-        <div className="alert alert-danger" role="alert">
-          {error}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <label htmlFor="username" className="form-label">
-            Usuário
-          </label>
-          <input
-            type="text"
-            className="form-control"
-            id="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            autoFocus
-          />
-        </div>
-
-        <div className="mb-3">
-          <label htmlFor="password" className="form-label">
-            Senha
-          </label>
-          <input
-            type="password"
-            className="form-control"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-
-        <button type="submit" className="btn btn-primary w-100">
-          Entrar
-        </button>
-      </form>
-
-      <p className="text-center mt-3">
-        Não tem uma conta?{" "}
-        <Link to="/register" style={{ textDecoration: "underline" }}>
-          Cadastre-se aqui
-        </Link>
-      </p>
     </div>
   );
 };
