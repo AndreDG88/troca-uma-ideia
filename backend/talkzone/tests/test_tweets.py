@@ -70,36 +70,33 @@ def test_unauthenticated_user_cannot_create_tweet():
 
 # Garante que um usuário autenticado pode editar um tweet que ele mesmo criou.
 @pytest.mark.django_db
-def test_user_can_update_own_tweet():
-    user = User.objects.create_user(username="andre", password="senha123")
+def test_user_can_update_own_tweet(auth_client, create_user):
+    user = create_user(username="andre")
     tweet = Tweet.objects.create(user=user, content="Original")
 
     client = APIClient()
-    response = client.post(
-        "/api/token/", {"username": "andre", "password": "senha123"}, format="json"
-    )
-    token = response.data["access"]
+    refresh = RefreshToken.for_user(user)
+    token = str(refresh.access_token)
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
 
     response = client.put(
         f"/api/tweets/{tweet.id}/", {"content": "Editado"}, format="json"
     )
+    
     assert response.status_code == 200
     assert response.data["content"] == "Editado"
 
 
 # Verifica se um usuário não consegue editar tweets de outras pessoas.
 @pytest.mark.django_db
-def test_user_cannot_update_other_user_tweet():
-    user1 = User.objects.create_user(username="andre", password="senha123")
-    user2 = User.objects.create_user(username="joao", password="senha456")
+def test_user_cannot_update_other_user_tweet(create_user):
+    user1 = create_user(username="andre")
+    user2 = create_user(username="joao")
     tweet = Tweet.objects.create(user=user2, content="Tweet do João")
 
     client = APIClient()
-    response = client.post(
-        "/api/token/", {"username": "andre", "password": "senha123"}, format="json"
-    )
-    token = response.data["access"]
+    refresh = RefreshToken.for_user(user1)
+    token = str(refresh.access_token)
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
 
     response = client.put(
@@ -110,33 +107,29 @@ def test_user_cannot_update_other_user_tweet():
 
 # Testa se um usuário pode deletar seu próprio tweet.
 @pytest.mark.django_db
-def test_user_can_delete_own_tweet():
-    user = User.objects.create_user(username="andre", password="senha123")
+def test_user_can_delete_own_tweet(create_user):
+    user = create_user(username="andre")
     tweet = Tweet.objects.create(user=user, content="Deletável")
 
     client = APIClient()
-    response = client.post(
-        "/api/token/", {"username": "andre", "password": "senha123"}, format="json"
-    )
-    token = response.data["access"]
+    refresh = RefreshToken.for_user(user)
+    token = str(refresh.access_token)
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
-
+    
     response = client.delete(f"/api/tweets/{tweet.id}/")
     assert response.status_code == 204
 
 
 # Garante que um usuário não consiga deletar o tweet de outra pessoa.
 @pytest.mark.django_db
-def test_user_cannot_delete_other_user_tweet():
-    user1 = User.objects.create_user(username="andre", password="senha123")
-    user2 = User.objects.create_user(username="joao", password="senha456")
+def test_user_cannot_delete_other_user_tweet(create_user):
+    user1 = create_user(username="andre")
+    user2 = create_user(username="joao")
     tweet = Tweet.objects.create(user=user2, content="Tweet do João")
 
     client = APIClient()
-    response = client.post(
-        "/api/token/", {"username": "andre", "password": "senha123"}, format="json"
-    )
-    token = response.data["access"]
+    refresh = RefreshToken.for_user(user1)
+    token = str(refresh.access_token)
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
 
     response = client.delete(f"/api/tweets/{tweet.id}/")
@@ -161,11 +154,11 @@ def test_toggle_like(auth_client):
     # Chama a rota de like
     response = client.post(f"/api/tweets/{tweet.id}/like/")
     assert response.status_code == 200
-    assert response.data["detail"] == "Tweet curtido."
+    assert response.data["detail"] == "Curtida."
 
     response = client.post(f"/api/tweets/{tweet.id}/like/")
     assert response.status_code == 200
-    assert response.data["detail"] == "Tweet descurtido."
+    assert response.data["detail"] == "Curtida removida."
 
 
 # Teste de reply a outro tweet
