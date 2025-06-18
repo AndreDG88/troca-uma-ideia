@@ -77,9 +77,9 @@ O frontend estará disponível em: http://localhost:5173
 
 ## Deploy
 
-API (Django): AndreDG88.pythonanywhere.com
+API (Django): https://andredg88.pythonanywhere.com
 
-Frontend (React): [link da Vercel quando disponível]
+Frontend (React): https://troca-uma-ideia.vercel.app/login
 
 
 
