@@ -100,12 +100,35 @@ const Home = () => {
           )}
 
           {(view === "sendPapo" || view === "timeline") && (
-            <button 
-              className={styles.navButton}
-              onClick={() => setView("feed")}
-            >
-              Voltar para meus papos
-            </button>
+            <>
+              <button 
+                className={styles.navButton}
+                onClick={() => setView("feed")}
+              >
+                Voltar para meus papos
+              </button>
+
+              {view === "sendPapo" && (
+                <button 
+                  className={styles.navButton}
+                  onClick={() => {
+                    setView("timeline");
+                    fetchTimelinePapos();
+                  }}
+                >
+                  Trocas de ideias
+                </button>
+              )}
+
+              {view === "timeline" && (
+                <button 
+                  className={styles.navButton}
+                  onClick={() => setView("sendPapo")}
+                >
+                  Mandar um papo
+                </button>
+              )}
+            </>
           )}
       </div>
 
