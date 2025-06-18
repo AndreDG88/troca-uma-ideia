@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/axios";
+import styles from "./Register.module.css";
 
 const Register = () => {
   const [username, setUsername] = useState("");
@@ -55,85 +56,105 @@ const Register = () => {
   };
 
   return (
-    <div className="container mt-5" style={{ maxWidth: "400px" }}>
-      <h2 className="mb-4 text-center">Cadastro</h2>
+    <div className={styles.backgroundWrapper}>
+      <video autoPlay loop muted className={styles.videoBackground}>
+        <source src="/media/background-login.mp4" type="video/mp4" />
+        Seu navegador não suporta vídeos em HTML5.
+      </video>
 
-      {error && <div className="alert alert-danger">{error}</div>}
-      {success && <div className="alert alert-success">{success}</div>}
+      <div className={styles.contentWrapper}>
+        <div className={styles.contentInner}>
+          <div className={styles.infoSection}>
+            <img
+              src="/media/troca-uma-ideia_logo.png"
+              alt="Logo Troca uma ideia!"
+              className={styles.logo}
+            />
+            <p className={styles.infoText}>
+              Para criar sua conta no <strong>Troca uma ideia!</strong>, preencha
+              corretamente seus dados. Capriche no nome de usuário e escolha um avatar legal!
+              <br />
+              <strong>OBS:</strong> Escolha uma imagem leve.
+            </p>
+          </div>
 
-      <form onSubmit={handleSubmit}>
-        {/* Usuário */}
-        <div className="mb-3">
-          <label htmlFor="username" className="form-label">Usuário</label>
-          <input
-            type="text"
-            id="username"
-            className="form-control"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            minLength={3}
-          />
+          <div className={styles.formSection}>
+            <h2 className={styles.title}>Cadastro</h2>
+
+            {error && <div className={styles.error}>{error}</div>}
+            {success && <div className={styles.success}>{success}</div>}
+
+            <form onSubmit={handleSubmit} className={styles.form}>
+              {/* Usuário */}
+              <div className={styles.formGroup}>
+                <label htmlFor="username">Usuário</label>
+                <input
+                  type="text"
+                  id="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                  minLength={3}
+                />
+              </div>
+
+              {/* Email */}
+              <div className={styles.formGroup}>
+                <label htmlFor="email">Email</label>
+                <input
+                  type="email"
+                  id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+
+              {/* Senha */}
+              <div className={styles.formGroup}>
+                <label htmlFor="password">Senha</label>
+                <input
+                  type="password"
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                />
+              </div>
+
+              {/* Confirmação de Senha */}
+              <div className={styles.formGroup}>
+                <label htmlFor="passwordConfirm">Confirme a Senha</label>
+                <input
+                  type="password"
+                  id="passwordConfirm"
+                  value={passwordConfirm}
+                  onChange={(e) => setPasswordConfirm(e.target.value)}
+                  required
+                  minLength={8}
+                />
+              </div>
+
+              {/* Upload de Avatar */}
+              <div className={styles.formGroup}>
+                <label htmlFor="avatar">Avatar (opcional)</label>
+                <input
+                  type="file"
+                  id="avatar"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                />
+              </div>
+
+              {/* Botão de submit */}
+              <button type="submit" className={styles.button}>
+                Cadastrar
+              </button>
+            </form>
+          </div>
         </div>
-
-        {/* Email */}
-        <div className="mb-3">
-          <label htmlFor="email" className="form-label">Email</label>
-          <input
-            type="email"
-            id="email"
-            className="form-control"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-
-        {/* Senha */}
-        <div className="mb-3">
-          <label htmlFor="password" className="form-label">Senha</label>
-          <input
-            type="password"
-            id="password"
-            className="form-control"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={6}
-          />
-        </div>
-
-        {/* Confirmação de Senha */}
-        <div className="mb-3">
-          <label htmlFor="passwordConfirm" className="form-label">Confirme a Senha</label>
-          <input
-            type="password"
-            id="passwordConfirm"
-            className="form-control"
-            value={passwordConfirm}
-            onChange={(e) => setPasswordConfirm(e.target.value)}
-            required
-            minLength={8}
-          />
-        </div>
-
-        {/* Upload de Avatar */}
-        <div className="mb-3">
-          <label htmlFor="avatar" className="form-label">Avatar (opcional)</label>
-          <input
-            type="file"
-            id="avatar"
-            className="form-control"
-            accept="image/*"
-            onChange={handleFileChange}
-          />
-        </div>
-
-        {/* Botão de submit */}
-        <button type="submit" className="btn btn-primary w-100">
-          Cadastrar
-        </button>
-      </form>
+      </div>
     </div>
   );
 };

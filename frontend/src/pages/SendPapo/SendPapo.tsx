@@ -1,5 +1,6 @@
 import { useState } from "react";
 import api from "../../api/axios";
+import styles from "./SendPapo.module.css";
 
 interface SendPapoProps {
   onPapoSent: () => void;
@@ -34,25 +35,24 @@ const SendPapo = ({ onPapoSent }: SendPapoProps) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mt-4">
-      <div className="mb-3">
-        <label htmlFor="content" className="form-label">
-          Manda o teu papo!:
-        </label>
-        <textarea
-          id="content"
-          className="form-control"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          rows={4}
-          disabled={loading}
-          maxLength={280}
-        />
-      </div>
+    <form onSubmit={handleSubmit} className={styles.formContainer}>
+      <label htmlFor="content" className={styles.label}>
+        <h3 className={styles.title}>Manda o teu papo!:</h3>
+      </label>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      <textarea
+        id="content"
+        className={styles.textarea}
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
+        rows={4}
+        disabled={loading}
+        maxLength={280}
+      />
 
-      <button type="submit" className="btn btn-success" disabled={loading}>
+      {error && <p className={styles.error}>{error}</p>}
+
+      <button type="submit" className={styles.button} disabled={loading}>
         {loading ? "Enviando..." : "Mandar papo"}
       </button>
     </form>

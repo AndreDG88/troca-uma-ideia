@@ -6,6 +6,7 @@ import Profile from "./pages/Profile/Profile";
 import MyTweets from "./pages/MyTweets/MyTweets";
 import PrivateRoute from "./components/PrivateRoute";
 import Layout from "./components/Layout/Layout";
+import './App.css';
 
 const App = () => {
   return (

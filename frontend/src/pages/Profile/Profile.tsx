@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import type { UserProfile } from '../../types/UserProfile';
 import TweetCard from '../../components/TweetCard/TweetCard';
 import api from '../../api/axios';
+import styles from './Profile.module.css';
 
 const Profile = () => {
   const { username } = useParams<{ username: string }>();
@@ -66,7 +67,7 @@ const Profile = () => {
             ? { 
                 ...prev, 
                 profile: { 
-                  ...prev.profile, 
+                  ...prev.profile,
                   followers_count:
                     (prev.profile.followers_count || 0) + (following ? -1 : 1),
                 }, 
@@ -117,71 +118,83 @@ const Profile = () => {
   const { profile, tweets } = profileData;
 
   return (
-    <div>
-      <div>
-        <img
-          src={profile.avatar || '/default-avatar.png'}
-          alt="Avatar"
-          style={{ width: 120, height: 120, borderRadius: '50%' }}
-        />
+    <div className={styles.pageWrapper}>
+      <div className={styles.profileContainer}>
+        <div style={{ textAlign: "center" }}>
+          <img
+            src={profile.avatar || '/default-avatar.png'}
+            alt="Avatar"
+            className={styles.avatar}
+          />
 
-        {editing && isOwnProfile ? (
-          <>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                if (e.target.files) setNewAvatar(e.target.files[0]);
-              }}
-            />
+          {editing && isOwnProfile ? (
+            <div className={styles.editControls}>
+              <input
+                type="file"
+                accept="image/*"
+                className={styles.inputFile}
+                onChange={(e) => {
+                  if (e.target.files) setNewAvatar(e.target.files[0]);
+                }}
+              />
 
-            <textarea
-              value={newBio}
-              onChange={(e) => setNewBio(e.target.value)}
-              placeholder="Bio"
-            />
-            <button onClick={handleSaveEdit}>Salvar</button>
-            <button onClick={() => setEditing(false)}>Cancelar</button>
-          </>
-        ) : (
-          <>
-            <h2>
+              <textarea
+                value={newBio}
+                onChange={(e) => setNewBio(e.target.value)}
+                placeholder="Bio"
+              />
+              <div className={styles.buttonsRow}>
+                <button onClick={handleSaveEdit} className={styles.button}>
+                  Salvar
+                </button>
+                <button onClick={() => setEditing(false)} className={styles.button}>
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
               {/* Exibe username fixo */}
-              @{finalUsername}
-            </h2>
-            <p>
-              <strong>{profile.followers_count || 0}</strong> seguidores ·{' '}
-              <strong>{profile.following_count || 0}</strong> seguindo
-            </p>
-            {/* Bio logo abaixo dos números */}
-            <p>{profile.bio}</p>
+              <h2 className={styles.username}>@{finalUsername}</h2>
+              <p className={styles.stats}>
+                <strong>{profile.followers_count || 0}</strong> seguidores ·{' '}
+                <strong>{profile.following_count || 0}</strong> seguindo
+              </p>
+              {/* Bio logo abaixo dos números */}
+              <p className={styles.bio}>{profile.bio}</p>
 
-            {isOwnProfile ? (
-              <button onClick={() => setEditing(true)}>Editar perfil</button>
-            ) : (
-              <button onClick={toggleFollow} disabled={btnLoading}>
-                {btnLoading
-                  ? 'Carregando...'
-                  : following
-                  ? 'Deixar de seguir'
-                  : 'Seguir'}
-              </button>
-            )}
-          </>
-        )}
-      </div>
+              <div className={styles.buttonsRow}>
+                {isOwnProfile ? (
+                  <>
+                    <button onClick={() => setEditing(true)} className={styles.button}>
+                      Editar perfil
+                    </button>
+                    <button onClick={() => navigate("/")} className={styles.button}>
+                      Voltar para Home
+                    </button>
+                  </>
+              ) : (
+                <button onClick={toggleFollow} disabled={btnLoading} className={styles.button}>
+                  {btnLoading
+                    ? 'Carregando...'
+                    : following
+                    ? 'Deixar de seguir'
+                    : 'Seguir'}
+                </button>
+              )}
+              </div>
+            </>
+          )}
+        </div>
 
-      <div>
-        <h3>Postagens</h3>
-        {tweets.length === 0 ? (
-          <p>Nenhum tweet ainda.</p>
-        ) : (
-          tweets.map((tweet) => <TweetCard key={tweet.id} tweet={tweet} />)
-        )}
-      </div>
-
-      <div style={{ marginTop: "2rem" }}>
-        <button onClick={() => navigate("/")}>Voltar para Home</button>
+        <div className={styles.tweetsSection}>
+          <h2 className={styles.title}>Trocas de ideia</h2>
+          {tweets.length === 0 ? (
+            <p>Nenhum tweet ainda.</p>
+          ) : (
+            tweets.map((tweet) => <TweetCard key={tweet.id} tweet={tweet} />)
+          )}
+        </div>
       </div>
     </div>
   );
