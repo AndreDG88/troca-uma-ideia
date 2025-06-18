@@ -32,10 +32,7 @@ DEBUG = config("DEBUG", default=False, cast=bool)
 
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", cast=Csv(), default="127.0.0.1,localhost")
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "https://troca-uma-ideia.vercel.app"
-]
+CORS_ALLOWED_ORIGINS = ["http://localhost:5173", "https://troca-uma-ideia.vercel.app"]
 
 CORS_ALLOW_CREDENTIALS = True
 
