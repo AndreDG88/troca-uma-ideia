@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import api from "../../api/axios";
 import type { Tweet } from "../../types/UserProfile";
 import { useAuth } from "../../context/AuthContext";
+import styles from "./TweetCard.module.css";
 
 interface TweetCardProps {
   tweet: Tweet;
@@ -136,68 +137,58 @@ const TweetCard = ({ tweet, onLiked, onCommented, onRepapeared }: TweetCardProps
     : "/default-avatar.png";
 
   return (
-    <li className="tweet-card border rounded p-3 mb-3">
+    <li className={styles.tweetCard}>
       {/* Header com avatar e nome do usuário */}
-      <div className="d-flex align-items-center mb-2">
-        <Link 
-          to={`/profile/${tweet.user?.username}`} 
-          className="d-flex align-items-center text-dark text-decoration-none"
-          >
+      <div className={styles.header}>
+        <Link to={`/profile/${tweet.user?.username}`} className={styles.username}>
           <img
             src={avatarUrl}
             alt={`${tweet.user?.username}'s avatar`}
-            style={{ width: 40, height: 40, borderRadius: "50%", marginRight: 10 }}
+            className={styles.avatar}
           />
-        <strong>{tweet.user?.username || "Usuário"}</strong>
+          @{tweet.user?.username || "Usuário"}
         </Link>
       </div>
 
       {/* SE FOR REPAPO: Exibe conteúdo original */}
       {tweet.is_repapo && tweet.original_tweet && (
-        <div className="alert alert-light p-2 mb-2">
-          <small className="text-muted">🔁 RePapearam este papo:</small>
-          <p className="mb-0">
-            <strong>@{tweet.original_tweet.user?.username}</strong>: {tweet.original_tweet.content}
-          </p>
+        <div className={styles.repapoBox}>
+          🔁 RePapearam este papo:<br />
+          <strong>@{tweet.original_tweet.user?.username}</strong>: {tweet.original_tweet.content}
         </div>
       )}
       
       {/* Conteúdo do tweet */}
-      <p>{tweet.content}</p>
+      <p className={styles.content}>{tweet.content}</p>
 
       {/* Botões: Curtir / Comentar / Repapo */}
-      <div className="d-flex gap-2 mt-2">
+      <div className={styles.actions}>
         <button
-          type="button"
           onClick={handleLikeToggle}
           disabled={loading}
-          className="btn btn-sm btn-outline-danger d-flex align-items-center gap-1"
+          className={styles.button}
         >
-          <span style={{ fontSize: "1.2rem" }}>❤️</span>
-          <span>{likesCount}</span>
+          ❤️ {likesCount}
         </button>
 
         <button
-          type="button"
           onClick={() => setCommentBoxVisible((prev) => !prev)}
-          className="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1"
+          className={styles.button}
         >
           💬 Comentar
         </button>
 
         <button
-          type="button"
           onClick={handleRepapo}
-          className="btn btn-sm btn-outline-info d-flex align-items-center gap-1"
+          className={styles.button}
         >
           🔁 RePapear ({repapearCount})
         </button>
 
         {tweet.user?.id === user?.id && (
           <button
-            type="button"
             onClick={handleDeleteTweet}
-            className="btn btn-sm btn-outline-dark d-flex align-items-center gap-1"
+            className={`${styles.button} ${styles.danger}`}
           >
             🗑️ Excluir
           </button>
@@ -206,14 +197,13 @@ const TweetCard = ({ tweet, onLiked, onCommented, onRepapeared }: TweetCardProps
 
       {/* Caixa de comentário */}
       {commentBoxVisible && (
-        <div className="mt-2">
+        <div className={styles.commentBox}>
           <textarea
-            className="form-control mb-2"
             placeholder="Escreva um comentário..."
             value={commentContent}
             onChange={(e) => setCommentContent(e.target.value)}
           />
-          <button onClick={handleCommentSubmit} className="btn btn-primary btn-sm">
+          <button onClick={handleCommentSubmit} className={styles.button}>
             Enviar
           </button>
         </div>
@@ -221,7 +211,7 @@ const TweetCard = ({ tweet, onLiked, onCommented, onRepapeared }: TweetCardProps
 
       {/* Renderizar replies */}
       {tweet.replies && tweet.replies.length > 0 && (
-        <ul className="mt-3 ps-3 border-start">
+        <ul className={styles.replies}>
           {tweet.replies.map((reply) => (
             <TweetCard key={reply.id} tweet={reply} />
           ))}

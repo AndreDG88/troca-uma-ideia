@@ -39,7 +39,7 @@ export default function Trends() {
 
   return (
     <div>
-      <h2>Hashtags em Alta</h2>
+      <h3>🔥 Papo em Alta</h3>
       <ul>
         {trends.map((trend, index) => (
           <li key={index}>

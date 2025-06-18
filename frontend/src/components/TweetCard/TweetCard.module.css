@@ -1,0 +1,105 @@
+:root {
+  --purple: #6c50d1;
+  --purple-light: #ece4ff;
+  --purple-medium: #d2c2f7;
+  --orange: #ff5900;
+  --orange-light: #fff1dc;
+  --gray-dark: #333333;
+  --gray: #555;
+  --gray-light: #f4f4f4;
+  --white: #ffffff;
+} 
+
+.tweetCard {
+  background-color: var(--white);
+  border: 1px solid var(--purple-light);
+  border-radius: 12px;
+  padding: 1.2rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--orange);
+}
+
+.username {
+  font-weight: 600;
+  color: var(--gray-dark);
+  text-decoration: none;
+}
+
+.repapoBox {
+  background-color: var(--orange-light);
+  border-left: 4px solid var(--orange);
+  padding: 0.5rem 1rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--gray);
+}
+
+.content {
+  font-size: 1rem;
+  color: var(--gray-dark);
+  margin-bottom: 1rem;
+  white-space: pre-wrap;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  border: 1px solid var(--gray-light);
+  background-color: var(--orange-light);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.button:hover {
+  background-color: var(--purple-light);
+}
+
+.button.danger:hover {
+  background-color: #ffe3e3;
+}
+
+.commentBox {
+  margin-top: 0.8rem;
+}
+
+.commentBox textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--gray-light);
+  resize: vertical;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.replies {
+  margin-top: 1rem;
+  padding-left: 1rem;
+  border-left: 2px solid var(--purple-medium);
+}

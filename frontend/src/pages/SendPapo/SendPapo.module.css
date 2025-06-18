@@ -1,0 +1,75 @@
+/* Cores do projeto */
+:root {
+  --purple: #6c50d1;
+  --purple-light: #ece4ff;
+  --orange: #ff5900;
+  --orange-light: #fff1dc;
+  --white: #ffffff;
+  --gray: #555;
+  --red: #ff5a5f;
+  --green: #38b000;
+}
+
+.formContainer {
+  background-color: var(--purple-light);
+  padding: 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  margin-bottom: 2rem;
+}
+
+.label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--gray);
+  font-size: 1.1rem;
+}
+
+.title {
+    color: var(--orange);
+}
+
+.textarea {
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid var(--purple);
+  border-radius: 12px;
+  resize: none;
+  font-size: 1rem;
+  font-family: inherit;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.textarea:disabled {
+  background-color: #f4f4f4;
+}
+
+.error {
+  color: var(--red);
+  margin-top: 0.5rem;
+  font-weight: 500;
+}
+
+.button {
+  margin-top: 1rem;
+  padding: 0.8rem 1.5rem;
+  background-color: var(--purple);
+  color: var(--white);
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.button:hover {
+  background-color: var(--orange);
+}
+
+.button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
